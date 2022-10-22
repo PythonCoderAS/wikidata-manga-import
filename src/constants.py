@@ -3,8 +3,13 @@ import pywikibot
 
 site: pywikibot.DataSite = pywikibot.Site("wikidata", "wikidata")
 
-genre_prop = pywikibot.PropertyPage(site, "P136")
-demographic_prop = pywikibot.PropertyPage(site, "P2360")
+genre_prop = "P136"
+demographic_prop = "P2360"
+start_prop = "P557"
+
+retrieved_prop = "P813"
+stated_at_prop = "P248"
+url_prop = "P854"
 
 class Genres(enum.Enum):
     action = pywikibot.ItemPage(site, 'Q15637293')
@@ -24,7 +29,7 @@ class Genres(enum.Enum):
     historical = pywikibot.ItemPage(site, 'Q101240934')
     horror = pywikibot.ItemPage(site, 'Q12767035')
     isekai = pywikibot.ItemPage(site, 'Q53911753')
-    Iyashikei = pywikibot.ItemPage(site, 'Q97358333')
+    iyashikei = pywikibot.ItemPage(site, 'Q97358333')
     magical_girl = pywikibot.ItemPage(site, 'Q752321')
     mahjong = pywikibot.ItemPage(site, 'Q382236')
     mecha = pywikibot.ItemPage(site, 'Q4292083')
