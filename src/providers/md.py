@@ -100,9 +100,10 @@ class MangadexProvider(Provider):
                 result.chapters = int(data["lastChapter"])
             except ValueError:
                 pass
-        if data["contentRating"] == "suggestive" or data["contentRating"] == "erotica":
-            result.genres.append(Genres.ecchi)
-        elif data["contentRating"] == "pornographic":
+        # Not a reliable indicator of ecchi-ness.
+        # if data["contentRating"] == "suggestive" or data["contentRating"] == "erotica":
+        #     result.genres.append(Genres.ecchi)
+        if data["contentRating"] == "pornographic":
             result.genres.append(Genres.hentai)
         if data["links"]:
             mal_id = data["links"].get("mal", None)

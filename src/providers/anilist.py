@@ -77,7 +77,8 @@ class AnilistProvider(Provider):
         "Survival": Genres.survival,
         "Vampire": Genres.vampire,
         "Zombie": Genres.zombie,
-        "Reverse Harem": Genres.harem
+        "Reverse Harem": Genres.harem,
+        "Hentai": Genres.hentai,
     }
 
     demographic_mapping = {
@@ -102,7 +103,6 @@ class AnilistProvider(Provider):
         r.raise_for_status()
         json = r.json()
         data = json["data"]["Media"]
-        adult = data["isAdult"]
         result = Result()
         if data["idMal"] is not None:
             claim = pywikibot.Claim(site, mal_id_prop)
@@ -111,18 +111,14 @@ class AnilistProvider(Provider):
         if data["genres"] is not None:
             for genre in data["genres"]:
                 if genre in self.genre_mapping:
-                    if genre == "Ecchi" and adult:
-                        continue
                     result.genres.append(self.genre_mapping[genre])
-        if adult:
-            result.genres.append(Genres.hentai)
         if data["tags"] is not None:
             for tag in data["tags"]:
                 if tag["name"] in self.genre_mapping:
                     result.genres.append(self.genre_mapping[tag["name"]])
         if data["startDate"] is not None:
             result.start_date = pywikibot.WbTime(data["startDate"]["year"], data["startDate"]["month"], data["startDate"]["day"])
-        if data["endDate"] is not None:
+        if data["endDate"] is not None and data["endDate"]["year"] is not None:
             result.end_date = pywikibot.WbTime(data["endDate"]["year"], data["endDate"]["month"], data["endDate"]["day"])
         if data["chapters"] is not None:
             result.chapters = data["chapters"]
