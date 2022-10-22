@@ -21,49 +21,65 @@ def add_or_update_references(provider: Provider, id: str, claim: pywikibot.Claim
     
 def enum_item_in_item_list(item: Genres | Demographics, existing_item_list: list[pywikibot.Claim]) -> bool:
     for existing_item in existing_item_list:
-        if existing_item.getTarget().id == item.value.id:
+        if existing_item.getTarget().id == item.value.id: # type: ignore
             return True
     return False
 
 def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], provider: Provider):
     # claims is the claims containing provider IDs.
     for claim in claims:
-        result = provider.get(claim.getTarget())
+        provider_id: str = claim.getTarget() # type: ignore
+        result = provider.get(provider_id)
+        reference = provider.get_reference(provider_id)
         existing_genres = item.claims.get(genre_prop, [])
         for genre in set(result.genres):
             if not enum_item_in_item_list(genre, existing_genres):
                 genre_claim = pywikibot.Claim(site, genre_prop)
                 genre_claim.setTarget(genre.value)
                 item.addClaim(genre_claim, summary=f"Adding genre from {provider.name}.")
-                add_or_update_references(provider, claim.getTarget(), genre_claim, result.reference)
+            else:
+                genre_claim = next(filter(lambda x: x.getTarget().id == genre.value.id, existing_genres))
+            add_or_update_references(provider, provider_id, genre_claim, reference)
         for demographic in set(result.demographics):
             if not enum_item_in_item_list(demographic, item.claims.get(demographic_prop, [])):
                 demographic_claim = pywikibot.Claim(site, demographic_prop)
                 demographic_claim.setTarget(demographic.value)
                 item.addClaim(demographic_claim, summary=f"Adding demographic from {provider.name}.")
-                add_or_update_references(provider, claim.getTarget(), demographic_claim, result.reference)
+            else:
+                demographic_claim = next(filter(lambda x: x.getTarget().id == demographic.value.id, item.claims.get(demographic_prop, [])))
+            add_or_update_references(provider, provider_id, demographic_claim, reference)
         if result.start_date is not None:
             time_obj = pywikibot.WbTime(year=result.start_date.year, month=result.start_date.month, day=result.start_date.day)
             if start_prop not in item.claims:
                 start_claim = pywikibot.Claim(site, start_prop)
                 start_claim.setTarget(time_obj)
                 item.addClaim(start_claim, summary=f"Adding start date from {provider.name}.")
-                add_or_update_references(provider, claim.getTarget(), start_claim, result.reference)
             else:
                 start_claim: pywikibot.Claim = item.claims[start_prop][0]
-                target: pywikibot.WbTime = start_claim.getTarget()
-                if target != time_obj and target.precision >= time_obj.precision:
-                    # If they have the same precision (or the old one is less precise),
-                    # then we add a duplicate statement and leave it to a human
-                    # to remove the wrong one.
+                target: pywikibot.WbTime = start_claim.getTarget() # type: ignore
+                if target.year != result.start_date.year:
+                    # We add a duplicate statement and leave it to a human to remove the wrong one.
                     start_claim = pywikibot.Claim(site, start_prop)
-                    start_claim.setTarget()
+                    start_claim.setTarget(time_obj)
                     item.addClaim(start_claim, summary=f"Adding start date from {provider.name}.")
-                    add_or_update_references(provider, claim.getTarget(), start_claim, result.reference)
                 elif target.year == result.start_date.year and target.precision < time_obj.precision:
                     # We could match month too but it seems redundant at this point.
                     start_claim.changeTarget(time_obj, summary=f"Updating start date from {provider.name}.")
-                    add_or_update_references(provider, claim.getTarget(), start_claim, result.reference)
+            add_or_update_references(provider, provider_id, start_claim, reference)
+        for prop, extra_prop_data in result.other_properties.items():
+            new_claim = extra_prop_data.claim
+            if prop not in item.claims:
+                item.addClaim(claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
+            elif extra_prop_data.skip_if_any_exists:
+                continue
+            else:
+                for existing_claim in item.claims[prop]:
+                    if existing_claim.getTarget() == new_claim.getTarget():
+                        new_claim = existing_claim
+                        break
+                else:
+                    item.addClaim(claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
+            add_or_update_references(provider, provider_id, new_claim, reference)
 
 def act_on_item(item: pywikibot.ItemPage):
     claims = item.claims

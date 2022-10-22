@@ -1,9 +1,10 @@
 import datetime
+from typing import Any
 import requests
 import pywikibot
 
 from ..abc.provider import Provider
-from ..constants import Genres, Demographics, site, stated_at_prop, url_prop
+from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop
 from ..data.reference import Reference
 from ..data.results import Result
 from ..pywikibot_stub_types import WikidataReference
@@ -48,7 +49,8 @@ class MALProvider(Provider):
         77: Genres.survival,
         54: Genres.sports, # Close-combat sports is a type of sports
         78: Genres.sports, # Team sports is a type of sports
-        32: Genres.vampire
+        32: Genres.vampire,
+        75: Genres.romance
     }
 
     # Sourced from https://api.jikan.moe/v4/genres/manga?filter=demographics
@@ -88,12 +90,18 @@ class MALProvider(Provider):
 
     def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:
         if stated_at_prop in potential_ref:
-            if potential_ref[stated_at_prop].target.id == self.mal_item.id:
-                return True
+            for claim in potential_ref[stated_at_prop]:
+                if claim.getTarget().id == self.mal_item.id: # type: ignore
+                    return True
         if url_prop in potential_ref:
-            if f"https://myanimelist.net/manga/{id}" in potential_ref[url_prop].target.lower():
-                return True
+            for claim in potential_ref[url_prop]:
+                if f"https://myanimelist.net/manga/{id}" in claim.getTarget().lower(): # type: ignore
+                    return True
+        if mal_id_prop in potential_ref:
+            for claim in potential_ref[mal_id_prop]:
+                if claim.getTarget() == id:
+                    return True
         return False
 
     def get_reference(self, id: str) -> Reference:
-        return Reference(self.mal_item, f"https://myanimelist.net/manga/{id}")
+        return Reference(stated_in=self.mal_item, url=f"https://myanimelist.net/manga/{id}")

@@ -1,15 +1,29 @@
 import enum
 import pywikibot
 
-site: pywikibot.DataSite = pywikibot.Site("wikidata", "wikidata")
+site: pywikibot.DataSite = pywikibot.Site("wikidata", "wikidata") # type: ignore
 
 genre_prop = "P136"
 demographic_prop = "P2360"
-start_prop = "P557"
+start_prop = "P577"
+country_prop = "P495"
+language_prop = "P407"
+hashtag_prop = "P2572"
 
 retrieved_prop = "P813"
 stated_at_prop = "P248"
 url_prop = "P854"
+
+mal_id_prop = "P4087"
+anilist_id_prop = "P8731"
+
+japan_item = pywikibot.ItemPage(site, "Q17")
+korea_item = pywikibot.ItemPage(site, "Q884")
+china_item = pywikibot.ItemPage(site, "Q148")
+
+japanese_lang_item = pywikibot.ItemPage(site, "Q5287")
+korean_lang_item = pywikibot.ItemPage(site, "Q9176")
+chinese_lang_item = pywikibot.ItemPage(site, "Q7850")
 
 class Genres(enum.Enum):
     action = pywikibot.ItemPage(site, 'Q15637293')

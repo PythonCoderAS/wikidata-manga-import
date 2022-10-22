@@ -1,11 +1,10 @@
 import dataclasses
 from datetime import datetime
-import string
 import pywikibot
 import datetime
 
 @dataclasses.dataclass
 class Reference:
     stated_in: pywikibot.ItemPage
-    url: string
+    url: str
     retrieved: datetime.datetime = datetime.datetime.now(datetime.timezone.utc)
