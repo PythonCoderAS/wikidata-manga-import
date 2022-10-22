@@ -25,8 +25,10 @@ def enum_item_in_item_list(item: Genres | Demographics, existing_item_list: list
             return True
     return False
 
-def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], provider: Provider):
+# Returns bool to signal a re-cycle.
+def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], provider: Provider) -> bool:
     # claims is the claims containing provider IDs.
+    re_cycle = False
     for claim in claims:
         provider_id: str = claim.getTarget() # type: ignore
         result = provider.get(provider_id)
@@ -69,7 +71,9 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
         for prop, extra_prop_data in result.other_properties.items():
             new_claim = extra_prop_data.claim
             if prop not in item.claims:
-                item.addClaim(claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
+                item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
+                if extra_prop_data.re_cycle_able:
+                    re_cycle = True
             elif extra_prop_data.skip_if_any_exists:
                 continue
             else:
@@ -78,11 +82,15 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                         new_claim = existing_claim
                         break
                 else:
-                    item.addClaim(claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
+                    item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
+                    if extra_prop_data.re_cycle_able:
+                        re_cycle = True
             add_or_update_references(provider, provider_id, new_claim, reference)
+    return re_cycle
 
 def act_on_item(item: pywikibot.ItemPage):
     claims = item.claims
     for prop, provider in providers.items():
         if prop in claims:
-            act_on_property(item, claims[prop], provider)
+            if act_on_property(item, claims[prop], provider):
+                return act_on_item(item)

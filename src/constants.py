@@ -16,6 +16,7 @@ url_prop = "P854"
 
 mal_id_prop = "P4087"
 anilist_id_prop = "P8731"
+md_id_prop = "P10589"
 
 japan_item = pywikibot.ItemPage(site, "Q17")
 korea_item = pywikibot.ItemPage(site, "Q884")

@@ -35,7 +35,8 @@ class AnilistProvider(Provider):
             chapters,
             volumes,
             countryOfOrigin,
-            hashtag
+            hashtag,
+            isAdult
         }
 }
     """
@@ -76,6 +77,7 @@ class AnilistProvider(Provider):
         "Survival": Genres.survival,
         "Vampire": Genres.vampire,
         "Zombie": Genres.zombie,
+        "Reverse Harem": Genres.harem
     }
 
     demographic_mapping = {
@@ -100,15 +102,20 @@ class AnilistProvider(Provider):
         r.raise_for_status()
         json = r.json()
         data = json["data"]["Media"]
+        adult = data["isAdult"]
         result = Result()
         if data["idMal"] is not None:
             claim = pywikibot.Claim(site, mal_id_prop)
             claim.setTarget(str(data["idMal"]))
-            result.other_properties[mal_id_prop] = ExtraProperty(claim=claim)
+            result.other_properties[mal_id_prop] = ExtraProperty(claim=claim, re_cycle_able=True)
         if data["genres"] is not None:
             for genre in data["genres"]:
                 if genre in self.genre_mapping:
+                    if genre == "Ecchi" and adult:
+                        continue
                     result.genres.append(self.genre_mapping[genre])
+        if adult:
+            result.genres.append(Genres.hentai)
         if data["tags"] is not None:
             for tag in data["tags"]:
                 if tag["name"] in self.genre_mapping:
