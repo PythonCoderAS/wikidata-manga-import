@@ -116,8 +116,6 @@ class MangadexProvider(Provider):
                 claim = pywikibot.Claim(site, anilist_id_prop)
                 claim.setTarget(str(anilist_id))
                 result.other_properties[anilist_id_prop] = ExtraProperty(claim=claim, re_cycle_able=True)
-        if data["year"]:
-            result.start_date = pywikibot.WbTime(year=data["year"])
         return result
 
     def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:

@@ -112,10 +112,11 @@ class AnilistProvider(Provider):
             for genre in data["genres"]:
                 if genre in self.genre_mapping:
                     result.genres.append(self.genre_mapping[genre])
-        if data["tags"] is not None:
-            for tag in data["tags"]:
-                if tag["name"] in self.genre_mapping:
-                    result.genres.append(self.genre_mapping[tag["name"]])
+        # Removing tags for now, they are user generated and not reliable.
+        # if data["tags"] is not None:
+        #     for tag in data["tags"]:
+        #         if tag["name"] in self.genre_mapping:
+        #             result.genres.append(self.genre_mapping[tag["name"]])
         if data["startDate"] is not None:
             result.start_date = pywikibot.WbTime(data["startDate"]["year"], data["startDate"]["month"], data["startDate"]["day"])
         if data["endDate"] is not None and data["endDate"]["year"] is not None:
