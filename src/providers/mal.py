@@ -4,7 +4,8 @@ import requests
 import pywikibot
 
 from ..abc.provider import Provider
-from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop
+from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, official_site_prop
+from ..data.extra_property import ExtraProperty
 from ..data.reference import Reference
 from ..data.results import Result
 from ..pywikibot_stub_types import WikidataReference
@@ -86,6 +87,11 @@ class MALProvider(Provider):
         for demographic in data["demographics"]:
             if demographic["mal_id"] in self.demographic_mapping:
                 ret.demographics.append(self.demographic_mapping[demographic["mal_id"]])
+        for external_item in data["external"]:
+            if external_item["name"] == "Official Site":
+                claim = pywikibot.Claim(site, official_site_prop)
+                claim.setTarget(external_item["url"])
+                ret.other_properties[official_site_prop].append(ExtraProperty(claim))
         return ret
 
     def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:

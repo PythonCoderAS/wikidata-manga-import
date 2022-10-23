@@ -68,24 +68,35 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                     # We could match month too but it seems redundant at this point.
                     start_claim.changeTarget(time_obj, summary=f"Updating start date from {provider.name}.")
             add_or_update_references(provider, provider_id, start_claim, reference)
-        for prop, extra_prop_data in result.other_properties.items():
-            new_claim = extra_prop_data.claim
-            if prop not in item.claims:
-                item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
-                if extra_prop_data.re_cycle_able:
-                    re_cycle = True
-            elif extra_prop_data.skip_if_any_exists:
-                continue
-            else:
-                for existing_claim in item.claims[prop]:
-                    if existing_claim.getTarget() == new_claim.getTarget():
-                        new_claim = existing_claim
-                        break
-                else:
+        for prop, extra_props in result.other_properties.items():
+            for extra_prop_data in extra_props:
+                new_claim = extra_prop_data.claim
+                if prop not in item.claims:
                     item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
                     if extra_prop_data.re_cycle_able:
                         re_cycle = True
-            add_or_update_references(provider, provider_id, new_claim, reference)
+                elif extra_prop_data.skip_if_any_exists:
+                    continue
+                else:
+                    for existing_claim in item.claims[prop]:
+                        if existing_claim.getTarget() == new_claim.getTarget():
+                            new_claim = existing_claim
+                            break
+                    else:
+                        item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
+                        if extra_prop_data.re_cycle_able:
+                            re_cycle = True
+                for qualifier_prop, qualifiers in extra_prop_data.qualifiers.items():
+                    for qualifier in qualifiers:
+                        if qualifier not in new_claim.qualifiers.get(qualifier_prop, []):
+                            new_claim.addQualifier(qualifier, summary=f"Adding {qualifier.getID()} to claim with property {prop} from {provider.name}.")
+                        else:
+                            for existing_qualifier in new_claim.qualifiers[qualifier_prop]:
+                                if existing_qualifier.getTarget() == qualifier.getTarget():
+                                    break
+                            else:
+                                new_claim.addQualifier(qualifier, summary=f"Adding {qualifier.getID()} to claim with property {prop} from {provider.name}.")
+                add_or_update_references(provider, provider_id, new_claim, reference)
     return re_cycle
 
 def act_on_item(item: pywikibot.ItemPage):

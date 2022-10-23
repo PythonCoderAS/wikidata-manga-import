@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import dataclasses
 import datetime
 
@@ -15,4 +17,4 @@ class Result:
     volumes: int | None = None
     chapters: int | None = None
     
-    other_properties: dict[str, ExtraProperty] = dataclasses.field(default_factory=dict)
+    other_properties: defaultdict[str, list[ExtraProperty]] = dataclasses.field(default_factory=lambda: defaultdict(list))

@@ -9,6 +9,7 @@ start_prop = "P577"
 country_prop = "P495"
 language_prop = "P407"
 hashtag_prop = "P2572"
+official_site_prop = "P856"
 
 retrieved_prop = "P813"
 stated_at_prop = "P248"

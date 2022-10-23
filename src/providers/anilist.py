@@ -4,7 +4,7 @@ import pywikibot
 from src.data.extra_property import ExtraProperty
 
 from ..abc.provider import Provider
-from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, japan_item, japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, hashtag_prop, anilist_id_prop
+from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, japan_item, japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, hashtag_prop, anilist_id_prop, official_site_prop
 from ..data.reference import Reference
 from ..data.results import Result
 from ..pywikibot_stub_types import WikidataReference
@@ -36,7 +36,12 @@ class AnilistProvider(Provider):
             volumes,
             countryOfOrigin,
             hashtag,
-            isAdult
+            isAdult,
+            externalLinks {
+                language
+                url
+                type
+            }
         }
 }
     """
@@ -94,6 +99,12 @@ class AnilistProvider(Provider):
         "KR": (korea_item, korean_lang_item),
         "CN": (china_item, chinese_lang_item)
     }
+
+    external_links_language_mapping: dict[str, pywikibot.ItemPage] = {
+        "Japanese": japanese_lang_item,
+        "Korean": korean_lang_item,
+        "Chinese": chinese_lang_item
+    }
     
     def __init__(self):
         self.session = requests.Session()
@@ -107,7 +118,7 @@ class AnilistProvider(Provider):
         if data["idMal"] is not None:
             claim = pywikibot.Claim(site, mal_id_prop)
             claim.setTarget(str(data["idMal"]))
-            result.other_properties[mal_id_prop] = ExtraProperty(claim=claim, re_cycle_able=True)
+            result.other_properties[mal_id_prop].append(ExtraProperty(claim=claim, re_cycle_able=True))
         if data["genres"] is not None:
             for genre in data["genres"]:
                 if genre in self.genre_mapping:
@@ -130,14 +141,24 @@ class AnilistProvider(Provider):
                 country, language = self.country_code_mapping[data["countryOfOrigin"]]
                 country_claim = pywikibot.Claim(site, country_prop)
                 country_claim.setTarget(country)
-                result.other_properties[country_prop] = ExtraProperty(claim=country_claim)
+                result.other_properties[country_prop].append(ExtraProperty(claim=country_claim))
                 language_claim = pywikibot.Claim(site, language_prop)
                 language_claim.setTarget(language)
-                result.other_properties[language_prop] = ExtraProperty(claim=language_claim, skip_if_any_exists=True)
+                result.other_properties[language_prop].append(ExtraProperty(claim=language_claim, skip_if_any_exists=True))
         if data["hashtag"] is not None:
             claim = pywikibot.Claim(site, hashtag_prop)
             claim.setTarget(data["hashtag"])
-            result.other_properties[hashtag_prop] = ExtraProperty(claim=claim)
+            result.other_properties[hashtag_prop].append(ExtraProperty(claim=claim))
+        if data["externalLinks"] is not None:
+            for item in data["externalLinks"]:
+                if item["type"] == "INFO" or item["type"] == "STREAMING":
+                    claim = pywikibot.Claim(site, official_site_prop)
+                    claim.setTarget(item["url"])
+                    result.other_properties[official_site_prop].append(ExtraProperty(claim=claim))
+                    if item["language"] in self.external_links_language_mapping:
+                        language_claim = pywikibot.Claim(site, language_prop)
+                        language_claim.setTarget(self.external_links_language_mapping[item["language"]])
+                        result.other_properties[official_site_prop][-1].qualifiers[language_prop].append(language_claim)
         return result
 
     def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:
