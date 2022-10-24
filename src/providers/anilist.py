@@ -1,7 +1,8 @@
 import requests
 import pywikibot
 
-from src.data.extra_property import ExtraProperty
+from ..data.extra_property import ExtraProperty, ExtraQualifier
+from ..data.smart_precision_time import SmartPrecisionTime
 
 from ..abc.provider import Provider
 from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, japan_item, japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, hashtag_prop, anilist_id_prop, official_site_prop
@@ -106,10 +107,7 @@ class AnilistProvider(Provider):
         "Chinese": chinese_lang_item
     }
     
-    def __init__(self):
-        self.session = requests.Session()
-    
-    def get(self, id: str) -> Result:
+    def get(self, id: str, _) -> Result:
         r = self.session.post(self.anilist_base, json={"query": self.query, "variables": {"id": id}})
         r.raise_for_status()
         json = r.json()
@@ -129,9 +127,9 @@ class AnilistProvider(Provider):
         #         if tag["name"] in self.genre_mapping:
         #             result.genres.append(self.genre_mapping[tag["name"]])
         if data["startDate"] is not None:
-            result.start_date = pywikibot.WbTime(data["startDate"]["year"], data["startDate"]["month"], data["startDate"]["day"])
+            result.start_date = SmartPrecisionTime(data["startDate"]["year"], data["startDate"]["month"], data["startDate"]["day"])
         if data["endDate"] is not None and data["endDate"]["year"] is not None:
-            result.end_date = pywikibot.WbTime(data["endDate"]["year"], data["endDate"]["month"], data["endDate"]["day"])
+            result.end_date = SmartPrecisionTime(data["endDate"]["year"], data["endDate"]["month"], data["endDate"]["day"])
         if data["chapters"] is not None:
             result.chapters = data["chapters"]
         if data["volumes"] is not None:
@@ -158,7 +156,7 @@ class AnilistProvider(Provider):
                     if item["language"] in self.external_links_language_mapping:
                         language_claim = pywikibot.Claim(site, language_prop)
                         language_claim.setTarget(self.external_links_language_mapping[item["language"]])
-                        result.other_properties[official_site_prop][-1].qualifiers[language_prop].append(language_claim)
+                        result.other_properties[official_site_prop][-1].qualifiers[language_prop].append(ExtraQualifier(language_claim))
         return result
 
     def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:

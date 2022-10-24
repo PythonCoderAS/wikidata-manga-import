@@ -1,11 +1,12 @@
 import datetime
-from typing import Any
+import re
+from unittest import skip
 import requests
 import pywikibot
 
 from ..abc.provider import Provider
-from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, official_site_prop
-from ..data.extra_property import ExtraProperty
+from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, official_site_prop, language_prop
+from ..data.extra_property import ExtraProperty, ExtraQualifier
 from ..data.reference import Reference
 from ..data.results import Result
 from ..pywikibot_stub_types import WikidataReference
@@ -14,6 +15,12 @@ class MALProvider(Provider):
     name: str = "MyAnimeList"
 
     jikan_base = "https://api.jikan.moe/v4"
+
+    year_regex = re.compile(r"\d{4}")
+
+    month_year_regex = re.compile(r"[A-Z][a-z]{2} \d{4}")
+
+    month_day_year_regex = re.compile(r"[A-Z][a-z]{2} \d{1,2}, \d{4}")
 
     mal_item = pywikibot.ItemPage(site, "Q4044680")
 
@@ -64,35 +71,50 @@ class MALProvider(Provider):
         27: Demographics.shonen
     }
 
-    def __init__(self):
-        self.session = requests.Session()
+    @classmethod
+    def get_precision(cls, date_string) -> int | None:
+        if cls.month_day_year_regex.match(date_string):
+            return pywikibot.WbTime.PRECISION["day"]
+        elif cls.month_year_regex.match(date_string):
+            return pywikibot.WbTime.PRECISION["month"]
+        elif cls.year_regex.match(date_string):
+            return pywikibot.WbTime.PRECISION["year"]
 
-    def get(self, id: str) -> Result:
+    def get(self, id: str, item: pywikibot.ItemPage) -> Result:
         r = self.session.get(f"{self.jikan_base}/manga/{id}/full")
         r.raise_for_status();
         json = r.json()
         data = json["data"]
-        ret = Result()
+        result = Result()
         if data["chapters"]:
-            ret.chapters = data["chapters"]
+            result.chapters = data["chapters"]
         if data["volumes"]:
-            ret.volumes = data["volumes"]
-        if data.get("published", {}).get("from", None):
-            ret.start_date = datetime.datetime.fromisoformat(data["published"]["from"])
-        if data.get("published", {}).get("to", None):
-            ret.end_date = datetime.datetime.fromisoformat(data["published"]["to"])
+            result.volumes = data["volumes"]
+        if data.get("published", {}):
+            start_date_str, end_date_str = data["published"]["string"].split(" to ")
+            if data.get("published", {}).get("from", None):
+                dt = datetime.datetime.fromisoformat(data["published"]["from"])
+                result.start_date = pywikibot.WbTime(year=dt.year, month=dt.month, day=dt.day, precision=self.get_precision(start_date_str))
+            if data.get("published", {}).get("to", None):
+                dt = datetime.datetime.fromisoformat(data["published"]["to"])
+                result.end_date = pywikibot.WbTime(year=dt.year, month=dt.month, day=dt.day, precision=self.get_precision(end_date_str))
         for genre in data["genres"] + data["explicit_genres"] + data["themes"]:
             if genre["mal_id"] in self.genre_mapping:
-                ret.genres.append(self.genre_mapping[genre["mal_id"]])
+                result.genres.append(self.genre_mapping[genre["mal_id"]])
         for demographic in data["demographics"]:
             if demographic["mal_id"] in self.demographic_mapping:
-                ret.demographics.append(self.demographic_mapping[demographic["mal_id"]])
+                result.demographics.append(self.demographic_mapping[demographic["mal_id"]])
         for external_item in data["external"]:
             if external_item["name"] == "Official Site":
                 claim = pywikibot.Claim(site, official_site_prop)
                 claim.setTarget(external_item["url"])
-                ret.other_properties[official_site_prop].append(ExtraProperty(claim))
-        return ret
+                result.other_properties[official_site_prop].append(ExtraProperty(claim))
+                if item.claims[language_prop]:
+                    language_item = item.claims[language_prop][0].getTarget()
+                    language_claim = pywikibot.Claim(site, language_prop)
+                    language_claim.setTarget(language_item)
+                    result.other_properties[official_site_prop][-1].qualifiers[language_prop].append(ExtraQualifier(language_claim, skip_if_any_exists=True))
+        return result
 
     def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:
         if stated_at_prop in potential_ref:

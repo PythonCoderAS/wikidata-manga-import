@@ -1,5 +1,6 @@
 import enum
 import pywikibot
+import requests
 
 site: pywikibot.DataSite = pywikibot.Site("wikidata", "wikidata") # type: ignore
 
@@ -10,10 +11,13 @@ country_prop = "P495"
 language_prop = "P407"
 hashtag_prop = "P2572"
 official_site_prop = "P856"
+num_parts_prop = "P2635"
 
 retrieved_prop = "P813"
 stated_at_prop = "P248"
 url_prop = "P854"
+archive_url_prop = "P1065"
+archive_date_prop = "P2960"
 
 mal_id_prop = "P4087"
 anilist_id_prop = "P8731"
@@ -26,6 +30,8 @@ china_item = pywikibot.ItemPage(site, "Q148")
 japanese_lang_item = pywikibot.ItemPage(site, "Q5287")
 korean_lang_item = pywikibot.ItemPage(site, "Q9176")
 chinese_lang_item = pywikibot.ItemPage(site, "Q7850")
+
+volume_item = pywikibot.ItemPage(site, "Q1238720")
 
 class Genres(enum.Enum):
     action = pywikibot.ItemPage(site, 'Q15637293')
@@ -76,3 +82,12 @@ class Demographics(enum.Enum):
     children = pywikibot.ItemPage(site, 'Q478804')
     shojo = pywikibot.ItemPage(site, 'Q242492')
     josei = pywikibot.ItemPage(site, 'Q503106')
+
+language_item_to_code_map = {
+    japanese_lang_item: 'ja',
+    korean_lang_item: 'ko',
+    chinese_lang_item: 'zh'
+}
+
+session = requests.Session()
+session.headers["user-agent"] = "AniMangaDBImportBot/Wikidata (https://wikidata.org/wiki/User:AniMangaDBImportBot) (abuse: https://wikidata.org/wiki/User_talk:RPI2026F1)"

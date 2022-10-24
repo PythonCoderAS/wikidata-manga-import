@@ -7,7 +7,7 @@ from ..abc.provider import Provider
 from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, japan_item, japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, anilist_id_prop, md_id_prop, official_site_prop
 from ..data.reference import Reference
 from ..data.results import Result
-from ..data.extra_property import ExtraProperty
+from ..data.extra_property import ExtraProperty, ExtraQualifier
 from ..pywikibot_stub_types import WikidataReference
 
 class MangadexProvider(Provider):
@@ -64,11 +64,8 @@ class MangadexProvider(Provider):
         "zh": (china_item, chinese_lang_item),
         "zh-hk": (china_item, chinese_lang_item)
     }
-
-    def __init__(self):
-        self.session = requests.Session()
     
-    def get(self, id: str) -> Result:
+    def get(self, id: str, _) -> Result:
         r = self.session.get(f"{self.md_base}/manga/{id}")
         r.raise_for_status()
         json = r.json()
@@ -125,7 +122,7 @@ class MangadexProvider(Provider):
                 if language:
                     qualifier_prop = pywikibot.Claim(site, language_prop)
                     qualifier_prop.setTarget(language)
-                    result.other_properties[official_site_prop][-1].qualifiers[language_prop].append(qualifier_prop)
+                    result.other_properties[official_site_prop][-1].qualifiers[language_prop].append(ExtraQualifier(qualifier_prop))
         return result
 
     def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:
