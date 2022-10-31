@@ -84,7 +84,7 @@ class MangadexProvider(Provider):
                 country, language = self.country_code_mapping[data["originalLanguage"]]
                 country_claim = pywikibot.Claim(site, country_prop)
                 country_claim.setTarget(country)
-                result.other_properties[country_prop].append(ExtraProperty(claim=country_claim, skip_if_any_exists=True))
+                result.other_properties[country_prop].append(ExtraProperty(claim=country_claim, skip_if_conflicting_exists=True))
                 language_claim = pywikibot.Claim(site, language_prop)
                 language_claim.setTarget(language)
                 result.other_properties[language_prop].append(ExtraProperty(claim=language_claim))

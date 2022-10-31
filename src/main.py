@@ -5,7 +5,7 @@ import pywikibot
 from .data.extra_property import ExtraProperty, ExtraQualifier
 from .data.smart_precision_time import SmartPrecisionTime
 
-from .constants import Demographics, Genres, site, genre_prop, demographic_prop, start_prop, retrieved_prop, stated_at_prop, url_prop, archive_date_prop, archive_url_prop, official_site_prop, volume_item, num_parts_prop
+from .constants import Demographics, Genres, site, genre_prop, demographic_prop, start_prop, retrieved_prop, stated_at_prop, url_prop, archive_date_prop, archive_url_prop, official_site_prop, volume_item, num_parts_prop, deprecated_reason_prop, link_rot_item
 from .data.reference import Reference
 from .pywikibot_stub_types import WikidataReference
 from .abc.provider import Provider
@@ -38,10 +38,13 @@ def de_archivify_url_property(prop: ExtraProperty):
         timestamp = datetime.strptime(match.group(1), "%Y%m%d%H%M%S")
         archive_url = pywikibot.Claim(site, archive_url_prop)
         archive_url.setTarget(full_url)
-        prop.qualifiers[archive_url_prop].append(ExtraQualifier(archive_url, skip_if_any_exists=True))
+        prop.qualifiers[archive_url_prop].append(ExtraQualifier(archive_url, skip_if_conflicting_exists=True))
         archive_date = pywikibot.Claim(site, archive_date_prop)
         archive_date.setTarget(SmartPrecisionTime(year=timestamp.year, month=timestamp.month, day=timestamp.day))
-        prop.qualifiers[archive_date_prop].append(ExtraQualifier(archive_date, skip_if_any_exists=True))
+        prop.qualifiers[archive_date_prop].append(ExtraQualifier(archive_date, skip_if_conflicting_exists=True))
+        depreicated_reason = pywikibot.Claim(site, deprecated_reason_prop)
+        depreicated_reason.setTarget(link_rot_item)
+        prop.qualifiers[deprecated_reason_prop].append(ExtraQualifier(depreicated_reason, skip_if_conflicting_exists=True))
     
 
 # Returns bool to signal a re-cycle.
@@ -52,15 +55,17 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
         provider_id: str = claim.getTarget() # type: ignore
         result = provider.get(provider_id, item)
         reference = provider.get_reference(provider_id)
-        # existing_genres = item.claims.get(genre_prop, [])
-        # for genre in set(result.genres):
-        #     if not enum_item_in_item_list(genre, existing_genres):
-        #         genre_claim = pywikibot.Claim(site, genre_prop)
-        #         genre_claim.setTarget(genre.value)
-        #         item.addClaim(genre_claim, summary=f"Adding genre from {provider.name}.")
-        #     else:
-        #         genre_claim = next(filter(lambda x: x.getTarget().id == genre.value.id, existing_genres))
-        #     add_or_update_references(provider, provider_id, genre_claim, reference)
+        existing_genres = item.claims.get(genre_prop, [])
+        for genre in set(result.genres):
+            if not enum_item_in_item_list(genre, existing_genres):
+                # No longer adding genres, only adding refs to existing claims
+                continue
+                # genre_claim = pywikibot.Claim(site, genre_prop)
+                # genre_claim.setTarget(genre.value)
+                # item.addClaim(genre_claim, summary=f"Adding genre from {provider.name}.")
+            else:
+                genre_claim = next(filter(lambda x: x.getTarget().id == genre.value.id, existing_genres))
+            add_or_update_references(provider, provider_id, genre_claim, reference)
         for demographic in set(result.demographics):
             if not enum_item_in_item_list(demographic, item.claims.get(demographic_prop, [])):
                 demographic_claim = pywikibot.Claim(site, demographic_prop)
@@ -70,23 +75,30 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                 demographic_claim = next(filter(lambda x: x.getTarget().id == demographic.value.id, item.claims.get(demographic_prop, [])))
             add_or_update_references(provider, provider_id, demographic_claim, reference)
         if result.start_date is not None:
-            time_obj = SmartPrecisionTime(year=result.start_date.year, month=result.start_date.month, day=result.start_date.day)
+            if isinstance(result.start_date, datetime):
+                time_obj = SmartPrecisionTime(year=result.start_date.year, month=result.start_date.month, day=result.start_date.day)
+            else:
+                time_obj = result.start_date
             if start_prop not in item.claims:
                 start_claim = pywikibot.Claim(site, start_prop)
                 start_claim.setTarget(time_obj)
                 item.addClaim(start_claim, summary=f"Adding start date from {provider.name}.")
+                add_or_update_references(provider, provider_id, start_claim, reference)
             else:
-                start_claim: pywikibot.Claim = item.claims[start_prop][0]
-                target: pywikibot.WbTime = start_claim.getTarget() # type: ignore
-                if target.year != result.start_date.year:
-                    # We add a duplicate statement and leave it to a human to remove the wrong one.
-                    start_claim = pywikibot.Claim(site, start_prop)
-                    start_claim.setTarget(time_obj)
-                    item.addClaim(start_claim, summary=f"Adding start date from {provider.name}.")
-                elif target.year == result.start_date.year and target.precision < time_obj.precision:
-                    # We could match month too but it seems redundant at this point.
-                    start_claim.changeTarget(time_obj, summary=f"Updating start date from {provider.name}.")
-            add_or_update_references(provider, provider_id, start_claim, reference)
+                start_claims: list[pywikibot.Claim] = item.claims[start_prop]
+                for start_claim in start_claims:
+                    target: pywikibot.WbTime = start_claim.getTarget() # type: ignore
+                    if target.year != result.start_date.year:
+                        # # We add a duplicate statement and leave it to a human to remove the wrong one.
+                        # start_claim = pywikibot.Claim(site, start_prop)
+                        # start_claim.setTarget(time_obj)
+                        # item.addClaim(start_claim, summary=f"Adding start date from {provider.name}.")
+                        # New plan: If we see a conflicting statement trust it.
+                        break
+                    elif target.year == result.start_date.year and target.precision < time_obj.precision:
+                        # We could match month too but it seems redundant at this point.
+                        start_claim.changeTarget(time_obj, summary=f"Updating start date from {provider.name}.")
+                        add_or_update_references(provider, provider_id, start_claim, reference)
         if result.volumes:
             quantity = pywikibot.WbQuantity(result.volumes, volume_item, site=site)
             if num_parts_prop not in item.claims:
@@ -112,16 +124,30 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                     item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
                     if extra_prop_data.re_cycle_able:
                         re_cycle = True
-                elif extra_prop_data.skip_if_any_exists:
-                    continue
                 else:
                     for existing_claim in item.claims[prop]:
+                        existing_claim: pywikibot.Claim
                         if existing_claim.getTarget() == new_claim.getTarget():
                             new_claim = existing_claim
                             if new_claim.getRank() != existing_claim.getRank():
                                 existing_claim.changeRank(new_claim.getRank())
                             break
                     else:
+                        if extra_prop_data.skip_if_conflicting_language_exists and prop in item.claims: # type: ignore
+                            for existing_claim in item.claims[prop]: # type: ignore
+                                existing_claim: pywikibot.Claim
+                                if isinstance(existing_claim.getTarget(), pywikibot.WbMonolingualText):
+                                    lang_target: pywikibot.WbMonolingualText = existing_claim.getTarget() # type: ignore
+                                    if lang_target.language == new_claim.getTarget().language: # type: ignore
+                                        break
+                                else:
+                                    continue
+                            else:
+                                item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
+                                if extra_prop_data.re_cycle_able:
+                                    re_cycle = True   
+                        elif extra_prop_data.skip_if_conflicting_exists:
+                            continue
                         item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.")
                         if extra_prop_data.re_cycle_able:
                             re_cycle = True
@@ -130,13 +156,13 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                         qualifier = qualifier_data.claim
                         if qualifier not in new_claim.qualifiers.get(qualifier_prop, []):
                             new_claim.addQualifier(qualifier, summary=f"Adding {qualifier.getID()} to claim with property {prop} from {provider.name}.")
-                        elif qualifier_data.skip_if_any_exists:
-                                continue
                         else:
                             for existing_qualifier in new_claim.qualifiers[qualifier_prop]:
                                 if existing_qualifier.getTarget() == qualifier.getTarget():
                                     break
                             else:
+                                if qualifier_data.skip_if_conflicting_exists:
+                                    continue
                                 new_claim.addQualifier(qualifier, summary=f"Adding {qualifier.getID()} to claim with property {prop} from {provider.name}.")
                 add_or_update_references(provider, provider_id, new_claim, reference)
     return re_cycle

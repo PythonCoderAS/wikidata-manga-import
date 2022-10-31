@@ -91,7 +91,11 @@ class MALProvider(Provider):
         if data["volumes"]:
             result.volumes = data["volumes"]
         if data.get("published", {}):
-            start_date_str, end_date_str = data["published"]["string"].split(" to ")
+            if " to " in data["published"]["string"]:
+                start_date_str, end_date_str = data["published"]["string"].split(" to ")
+            else:
+                start_date_str = data["published"]["string"]
+                end_date_str = None
             if data.get("published", {}).get("from", None):
                 dt = datetime.datetime.fromisoformat(data["published"]["from"])
                 result.start_date = pywikibot.WbTime(year=dt.year, month=dt.month, day=dt.day, precision=self.get_precision(start_date_str))
@@ -113,7 +117,7 @@ class MALProvider(Provider):
                     language_item = item.claims[language_prop][0].getTarget()
                     language_claim = pywikibot.Claim(site, language_prop)
                     language_claim.setTarget(language_item)
-                    result.other_properties[official_site_prop][-1].qualifiers[language_prop].append(ExtraQualifier(language_claim, skip_if_any_exists=True))
+                    result.other_properties[official_site_prop][-1].qualifiers[language_prop].append(ExtraQualifier(language_claim, skip_if_conflicting_exists=True))
         return result
 
     def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:

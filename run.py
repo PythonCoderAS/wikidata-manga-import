@@ -4,14 +4,19 @@ import pywikibot
 
 from src.constants import site
 from src.main import act_on_item
+from src.copy_labels import copy_labels
 
 parser = argparse.ArgumentParser("wikidata-anime-import")
 parser.add_argument("-f", "--input-file", type=str, help="The file of items to read from.")
 parser.add_argument("-i", "--item", type=str, help="The item to import data for.")
+parser.add_argument("--copy-from", type=str, help="The item to copy labels from.")
 
-def act_on_item_string(item_string: str):
+def act_on_item_string(item_string: str, copy_from_item_string: str | None = None):
     item = pywikibot.ItemPage(site, item_string)
     act_on_item(item)
+    if copy_from_item_string:
+        copy_from_item = pywikibot.ItemPage(site, copy_from_item_string)
+        copy_labels(copy_from_item, item)
 
 def main(argv=None):
     args = parser.parse_args(argv)
@@ -24,7 +29,7 @@ def main(argv=None):
             for line in f:
                 act_on_item_string(line.strip())
     else:
-        act_on_item_string(args.item.strip())
+        act_on_item_string(args.item.strip(), copy_from_item_string=args.copy_from)
 
 if __name__ == "__main__":
     main()

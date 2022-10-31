@@ -12,12 +12,15 @@ language_prop = "P407"
 hashtag_prop = "P2572"
 official_site_prop = "P856"
 num_parts_prop = "P2635"
+title_prop = "P1476"
+romaji_title_prop = "P2125"
 
 retrieved_prop = "P813"
 stated_at_prop = "P248"
 url_prop = "P854"
 archive_url_prop = "P1065"
 archive_date_prop = "P2960"
+deprecated_reason_prop = "P2241"
 
 mal_id_prop = "P4087"
 anilist_id_prop = "P8731"
@@ -32,6 +35,7 @@ korean_lang_item = pywikibot.ItemPage(site, "Q9176")
 chinese_lang_item = pywikibot.ItemPage(site, "Q7850")
 
 volume_item = pywikibot.ItemPage(site, "Q1238720")
+link_rot_item = pywikibot.ItemPage(site, "Q1193907")
 
 class Genres(enum.Enum):
     action = pywikibot.ItemPage(site, 'Q15637293')
