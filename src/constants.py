@@ -25,6 +25,7 @@ deprecated_reason_prop = "P2241"
 mal_id_prop = "P4087"
 anilist_id_prop = "P8731"
 md_id_prop = "P10589"
+mu_id_prop = "P11149"
 
 japan_item = pywikibot.ItemPage(site, "Q17")
 korea_item = pywikibot.ItemPage(site, "Q884")
@@ -36,6 +37,11 @@ chinese_lang_item = pywikibot.ItemPage(site, "Q7850")
 
 volume_item = pywikibot.ItemPage(site, "Q1238720")
 link_rot_item = pywikibot.ItemPage(site, "Q1193907")
+
+mal_item = pywikibot.ItemPage(site, "Q4044680")
+anilist_item = pywikibot.ItemPage(site, "Q86470198")
+md_item = pywikibot.ItemPage(site, "Q110093307")
+mu_item = pywikibot.ItemPage(site, "Q114730827")
 
 class Genres(enum.Enum):
     action = pywikibot.ItemPage(site, 'Q15637293')

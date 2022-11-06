@@ -1,21 +1,19 @@
 import re
 
-import requests
 import pywikibot
+import requests
 
 from ..abc.provider import Provider
-from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, japan_item, japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, anilist_id_prop, md_id_prop, official_site_prop
+from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, japan_item, japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, anilist_id_prop, md_id_prop, official_site_prop, mu_id_prop, md_item, mu_item
 from ..data.reference import Reference
 from ..data.results import Result
-from ..data.extra_property import ExtraProperty, ExtraQualifier
+from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
 from ..pywikibot_stub_types import WikidataReference
 
 class MangadexProvider(Provider):
     name = "MangaDex"
 
     md_base = "https://api.mangadex.org"
-
-    md_item = pywikibot.ItemPage(site, "Q110093307")
 
     # Sourced from https://api.mangadex.org/manga/tag
 
@@ -64,6 +62,10 @@ class MangadexProvider(Provider):
         "zh": (china_item, chinese_lang_item),
         "zh-hk": (china_item, chinese_lang_item)
     }
+
+    mu_new_url_regex = re.compile(r"https:\/\/www\.mangaupdates\.com\/series\/([0-9a-z]+)")
+    mu_check_claim = pywikibot.Claim(site, stated_at_prop)
+    mu_check_claim.setTarget(mu_item)
     
     def get(self, id: str, _) -> Result:
         r = self.session.get(f"{self.md_base}/manga/{id}")
@@ -114,6 +116,33 @@ class MangadexProvider(Provider):
                 claim = pywikibot.Claim(site, anilist_id_prop)
                 claim.setTarget(str(anilist_id))
                 result.other_properties[anilist_id_prop].append(ExtraProperty(claim=claim, re_cycle_able=True))
+            mu_id: str | None = data["links"].get("mu", None)
+            if mu_id:
+                if mu_id.isnumeric():
+                    try:
+                        r = self.session.get(f"https://www.mangaupdates.com/series.html?id={mu_id}")
+                        r.raise_for_status()
+                        if r.status_code == 200:
+                            text = r.text
+                            if match := self.mu_new_url_regex.search(text):
+                                new_mu_id = match.group(1)
+                                claim = pywikibot.Claim(site, mu_id_prop)
+                                claim.setTarget(new_mu_id)
+                                extra_prop = ExtraProperty(claim=claim, re_cycle_able=True)
+                                extra_ref = ExtraReference(url_match_pattern=re.compile(r"https://www.mangaupdates.com/series.html?id=[0-9]+"))
+                                extra_ref.match_property_values[stated_at_prop] = extra_ref.new_reference_props[stated_at_prop] = self.mu_check_claim
+                                url_ref_claim = pywikibot.Claim(site, url_prop)
+                                url_ref_claim.setTarget(f"https://www.mangaupdates.com/series.html?id={mu_id}")
+                                extra_ref.new_reference_props[url_prop] = url_ref_claim
+                                extra_prop.extra_references.append(extra_ref)
+                                result.other_properties[mu_id_prop].append(extra_prop)
+                    except (requests.HTTPError, UnicodeDecodeError):
+                        pass
+                else:
+                    claim = pywikibot.Claim(site, mu_id_prop)
+                    claim.setTarget(mu_id)
+                    extra_prop = ExtraProperty(claim=claim, re_cycle_able=True)
+                    result.other_properties[mu_id_prop].append(extra_prop)
             external_link = data["links"].get("raw", None)
             if external_link:
                 claim = pywikibot.Claim(site, official_site_prop)
@@ -128,7 +157,7 @@ class MangadexProvider(Provider):
     def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:
         if stated_at_prop in potential_ref:
             for claim in potential_ref[stated_at_prop]:
-                if claim.getTarget().id == self.md_item.id: # type: ignore
+                if claim.getTarget().id == md_item.id: # type: ignore
                     return True
         if url_prop in potential_ref:
             for claim in potential_ref[url_prop]:
@@ -141,4 +170,4 @@ class MangadexProvider(Provider):
         return False
 
     def get_reference(self, id: str) -> Reference:
-        return Reference(stated_in=self.md_item, url=f"https://mangadex.org/title/{id}")
+        return Reference(stated_in=md_item, url=f"https://mangadex.org/title/{id}")

@@ -1,15 +1,17 @@
 import datetime
+import logging
 import re
-from unittest import skip
-import requests
+import time
 import pywikibot
 
 from ..abc.provider import Provider
-from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, official_site_prop, language_prop
+from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, official_site_prop, language_prop, mal_item
 from ..data.extra_property import ExtraProperty, ExtraQualifier
 from ..data.reference import Reference
 from ..data.results import Result
 from ..pywikibot_stub_types import WikidataReference
+
+logger = logging.getLogger(__name__)
 
 class MALProvider(Provider):
     name: str = "MyAnimeList"
@@ -21,8 +23,6 @@ class MALProvider(Provider):
     month_year_regex = re.compile(r"[A-Z][a-z]{2} \d{4}")
 
     month_day_year_regex = re.compile(r"[A-Z][a-z]{2} \d{1,2}, \d{4}")
-
-    mal_item = pywikibot.ItemPage(site, "Q4044680")
 
     # Sourced from https://api.jikan.moe/v4/genres/manga
 
@@ -80,11 +80,22 @@ class MALProvider(Provider):
         elif cls.year_regex.match(date_string):
             return pywikibot.WbTime.PRECISION["year"]
 
-    def get(self, id: str, item: pywikibot.ItemPage) -> Result:
+    def get(self, id: str, item: pywikibot.ItemPage, *, retry_key_error_count = 5) -> Result:
         r = self.session.get(f"{self.jikan_base}/manga/{id}/full")
+        if r.status_code == 408:
+            logger.warning("Jikan.moe timed out, retrying in 5 seconds...", extra={"itemId": item.id, "provider": self.name})
+            time.sleep(5)
+            return self.get(id, item)
         r.raise_for_status();
         json = r.json()
-        data = json["data"]
+        try:
+            data = json["data"]
+        except KeyError:
+            if retry_key_error_count == 0:
+                raise
+            logger.warning("Jikan.moe returned an invalid response, retrying in 5 seconds... (%s retries left)", retry_key_error_count, extra={"itemId": item.id, "provider": self.name})
+            time.sleep(5)
+            return self.get(id, item, retry_key_error_count=retry_key_error_count - 1)
         result = Result()
         if data["chapters"]:
             result.chapters = data["chapters"]
@@ -123,7 +134,7 @@ class MALProvider(Provider):
     def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:
         if stated_at_prop in potential_ref:
             for claim in potential_ref[stated_at_prop]:
-                if claim.getTarget().id == self.mal_item.id: # type: ignore
+                if claim.getTarget().id == mal_item.id: # type: ignore
                     return True
         if url_prop in potential_ref:
             for claim in potential_ref[url_prop]:
@@ -136,4 +147,4 @@ class MALProvider(Provider):
         return False
 
     def get_reference(self, id: str) -> Reference:
-        return Reference(stated_in=self.mal_item, url=f"https://myanimelist.net/manga/{id}")
+        return Reference(stated_in=mal_item, url=f"https://myanimelist.net/manga/{id}")
