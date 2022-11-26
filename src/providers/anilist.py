@@ -153,7 +153,7 @@ class AnilistProvider(Provider):
                 result.other_properties[language_prop].append(ExtraProperty(claim=language_claim, skip_if_conflicting_exists=True))
         if data["hashtag"] is not None:
             claim = pywikibot.Claim(site, hashtag_prop)
-            claim.setTarget(data["hashtag"].lstrip("#"))
+            claim.setTarget(data["hashtag"].lstrip("#").strip())
             result.other_properties[hashtag_prop].append(ExtraProperty(claim=claim))
         if data["externalLinks"] is not None:
             for item in data["externalLinks"]:
