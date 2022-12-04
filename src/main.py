@@ -69,7 +69,11 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
         automated_hash_text = ""
     for claim in claims:
         provider_id: str = claim.getTarget() # type: ignore
-        result: Result = provider.get(provider_id, item)
+        try:
+            result: Result = provider.get(provider_id, item)
+        except Exception as e:
+            logger.error("Error while getting data.", extra=logger_extra, exc_info=e)
+            return False
         reference = provider.get_reference(provider_id)
         if not automated_hash:
             existing_genres = item.claims.get(genre_prop, [])
