@@ -86,7 +86,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                     # item.addClaim(genre_claim, summary=f"Adding genre from {provider.name}.{automated_hash_text}")
                 else:
                     genre_claim = next(filter(lambda x: x.getTarget().id == genre.value.id, existing_genres))
-                add_or_update_references(provider, provider_id, genre_claim, reference)
+                add_or_update_references(provider, provider_id, genre_claim, reference, automated_hash=automated_hash)
             for demographic in set(result.demographics):
                 if not enum_item_in_item_list(demographic, item.claims.get(demographic_prop, [])):
                     demographic_claim = pywikibot.Claim(site, demographic_prop)
@@ -95,7 +95,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                     item.addClaim(demographic_claim, summary=f"Adding demographic from {provider.name}.{automated_hash_text}")
                 else:
                     demographic_claim = next(filter(lambda x: x.getTarget().id == demographic.value.id, item.claims.get(demographic_prop, [])))
-                add_or_update_references(provider, provider_id, demographic_claim, reference)
+                add_or_update_references(provider, provider_id, demographic_claim, reference, automated_hash=automated_hash)
             if result.start_date is not None:
                 if isinstance(result.start_date, datetime):
                     time_obj = SmartPrecisionTime(year=result.start_date.year, month=result.start_date.month, day=result.start_date.day)
@@ -106,7 +106,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                     start_claim.setTarget(time_obj)
                     logger.info("Adding start date: %s", time_obj.toTimestr(), extra=logger_extra)
                     item.addClaim(start_claim, summary=f"Adding start date from {provider.name}.{automated_hash_text}")
-                    add_or_update_references(provider, provider_id, start_claim, reference)
+                    add_or_update_references(provider, provider_id, start_claim, reference, automated_hash=automated_hash)
                 else:
                     start_claims: list[pywikibot.Claim] = item.claims[start_prop]
                     for start_claim in start_claims:
@@ -122,7 +122,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                             # We could match month too but it seems redundant at this point.
                             logger.info("Changing start date from %s to %s", target.toTimestr(), time_obj.toTimestr(), extra=logger_extra)
                             start_claim.changeTarget(time_obj, summary=f"Updating start date from {provider.name}.{automated_hash_text}")
-                            add_or_update_references(provider, provider_id, start_claim, reference)
+                            add_or_update_references(provider, provider_id, start_claim, reference, automated_hash=automated_hash)
             if result.volumes:
                 quantity = pywikibot.WbQuantity(result.volumes, volume_item, site=site)
                 if num_parts_prop not in item.claims:
@@ -139,7 +139,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                         num_parts_claim.setTarget(quantity)
                         logger.info("Adding number of volumes: %s", quantity, extra=logger_extra)
                         item.addClaim(num_parts_claim, summary=f"Adding number of volumes from {provider.name}.{automated_hash_text}")
-                add_or_update_references(provider, provider_id, num_parts_claim, reference)
+                add_or_update_references(provider, provider_id, num_parts_claim, reference, automated_hash=automated_hash)
         for prop, extra_props in result.other_properties.items():
             if automated_hash:
                 if prop not in automated_properties:
@@ -222,7 +222,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                     else:
                         logger.info("Adding reference to [%s: %s]", prop, new_claim.getTarget(), extra=logger_extra)
                         new_claim.addSources(list(extra_reference.new_reference_props.values()), summary=f"Adding reference to claim with property {prop} from {provider.name}.{automated_hash_text}")
-                add_or_update_references(provider, provider_id, new_claim, reference)
+                add_or_update_references(provider, provider_id, new_claim, reference, automated_hash=automated_hash)
     return re_cycle
 
 def act_on_item(item: pywikibot.ItemPage, automated_hash: str = ""):
