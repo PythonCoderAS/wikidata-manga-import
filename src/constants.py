@@ -27,6 +27,9 @@ anilist_id_prop = "P8731"
 md_id_prop = "P10589"
 mu_id_prop = "P11149"
 
+automated_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop]
+automated_scan_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop]
+
 japan_item = pywikibot.ItemPage(site, "Q17")
 korea_item = pywikibot.ItemPage(site, "Q884")
 china_item = pywikibot.ItemPage(site, "Q148")
