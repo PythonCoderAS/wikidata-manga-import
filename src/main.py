@@ -33,7 +33,7 @@ def add_or_update_references(provider: Provider, id: str, claim: pywikibot.Claim
     url_ref.setTarget(new_reference.url)
     logger_extra = {"provider": provider.name, "itemId": None}
     logger.info("Adding reference to claim %s: %s", claim.getID(), claim.getTarget(), extra=logger_extra)
-    claim.addSources([retrieved_ref, stated_in_ref, url_ref], summary=f"Adding reference for data imported from {provider.name}.{automated_hash_text}")
+    claim.addSources([retrieved_ref, stated_in_ref, url_ref], summary=f"Adding reference for data imported from {provider.name}.{automated_hash_text}", bot=True)
     
 def enum_item_in_item_list(item: Genres | Demographics, existing_item_list: list[pywikibot.Claim]) -> bool:
     for existing_item in existing_item_list:
@@ -83,7 +83,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                     continue
                     # genre_claim = pywikibot.Claim(site, genre_prop)
                     # genre_claim.setTarget(genre.value)
-                    # item.addClaim(genre_claim, summary=f"Adding genre from {provider.name}.{automated_hash_text}")
+                    # item.addClaim(genre_claim, summary=f"Adding genre from {provider.name}.{automated_hash_text}", bot=True)
                 else:
                     genre_claim = next(filter(lambda x: x.getTarget().id == genre.value.id, existing_genres))
                 add_or_update_references(provider, provider_id, genre_claim, reference, automated_hash=automated_hash)
@@ -92,7 +92,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                     demographic_claim = pywikibot.Claim(site, demographic_prop)
                     demographic_claim.setTarget(demographic.value)
                     logger.info("Adding demographic: %s", demographic_claim, extra=logger_extra)
-                    item.addClaim(demographic_claim, summary=f"Adding demographic from {provider.name}.{automated_hash_text}")
+                    item.addClaim(demographic_claim, summary=f"Adding demographic from {provider.name}.{automated_hash_text}", bot=True)
                 else:
                     demographic_claim = next(filter(lambda x: x.getTarget().id == demographic.value.id, item.claims.get(demographic_prop, [])))
                 add_or_update_references(provider, provider_id, demographic_claim, reference, automated_hash=automated_hash)
@@ -105,7 +105,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                     start_claim = pywikibot.Claim(site, start_prop)
                     start_claim.setTarget(time_obj)
                     logger.info("Adding start date: %s", time_obj.toTimestr(), extra=logger_extra)
-                    item.addClaim(start_claim, summary=f"Adding start date from {provider.name}.{automated_hash_text}")
+                    item.addClaim(start_claim, summary=f"Adding start date from {provider.name}.{automated_hash_text}", bot=True)
                     add_or_update_references(provider, provider_id, start_claim, reference, automated_hash=automated_hash)
                 else:
                     start_claims: list[pywikibot.Claim] = item.claims[start_prop]
@@ -115,7 +115,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                             # # We add a duplicate statement and leave it to a human to remove the wrong one.
                             # start_claim = pywikibot.Claim(site, start_prop)
                             # start_claim.setTarget(time_obj)
-                            # item.addClaim(start_claim, summary=f"Adding start date from {provider.name}.{automated_hash_text}")
+                            # item.addClaim(start_claim, summary=f"Adding start date from {provider.name}.{automated_hash_text}", bot=True)
                             # New plan: If we see a conflicting statement trust it.
                             break
                         elif target.year == result.start_date.year and target.precision < time_obj.precision:
@@ -128,7 +128,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                 if num_parts_prop not in item.claims:
                     num_parts_claim = pywikibot.Claim(site, num_parts_prop)
                     num_parts_claim.setTarget(quantity)
-                    item.addClaim(num_parts_claim, summary=f"Adding number of volumes from {provider.name}.{automated_hash_text}")
+                    item.addClaim(num_parts_claim, summary=f"Adding number of volumes from {provider.name}.{automated_hash_text}", bot=True)
                 else:
                     for num_parts_possible_claim in item.claims[num_parts_prop]:
                         if num_parts_possible_claim.getTarget() == quantity:
@@ -138,7 +138,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                         num_parts_claim = pywikibot.Claim(site, num_parts_prop)
                         num_parts_claim.setTarget(quantity)
                         logger.info("Adding number of volumes: %s", quantity, extra=logger_extra)
-                        item.addClaim(num_parts_claim, summary=f"Adding number of volumes from {provider.name}.{automated_hash_text}")
+                        item.addClaim(num_parts_claim, summary=f"Adding number of volumes from {provider.name}.{automated_hash_text}", bot=True)
                 add_or_update_references(provider, provider_id, num_parts_claim, reference, automated_hash=automated_hash)
         for prop, extra_props in result.other_properties.items():
             if automated_hash:
@@ -152,7 +152,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                     if extra_prop_data.reference_only:
                         continue
                     logger.info("Adding %s: %s", prop, new_claim.getTarget(), extra=logger_extra)
-                    item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.{automated_hash_text}")
+                    item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.{automated_hash_text}", bot=True)
                     if extra_prop_data.re_cycle_able:
                         logger.warning("Re-cycling enabled.", extra=logger_extra)
                         re_cycle = True
@@ -163,7 +163,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                             new_claim = existing_claim
                             if new_claim.getRank() != existing_claim.getRank():
                                 logger.info("Changing rank of [%s: %s] from %s to %s", prop, existing_claim.getTarget(), existing_claim.getRank(), new_claim.getRank(), extra=logger_extra)
-                                existing_claim.changeRank(new_claim.getRank())
+                                existing_claim.changeRank(new_claim.getRank(), bot=True)
                             break
                     else:
                         if extra_prop_data.skip_if_conflicting_language_exists and prop in item.claims: # type: ignore
@@ -179,7 +179,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                                 if extra_prop_data.reference_only:
                                     continue
                                 logger.info("Adding %s: %s", prop, new_claim.getTarget(), extra=logger_extra)
-                                item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.{automated_hash_text}")
+                                item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.{automated_hash_text}", bot=True)
                                 if extra_prop_data.re_cycle_able:
                                     logger.warning("Re-cycling enabled.", extra=logger_extra)
                                     re_cycle = True   
@@ -189,7 +189,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                             if extra_prop_data.reference_only:
                                 continue
                             logger.info("Adding %s: %s", prop, new_claim.getTarget(), extra=logger_extra)
-                            item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.{automated_hash_text}")
+                            item.addClaim(new_claim, summary=f"Adding {new_claim.getID()} from {provider.name}.{automated_hash_text}", bot=True)
                         except ValueError:
                             logger.error(f"ERROR: Could not add claim {prop}: {new_claim.getTarget()}.", exc_info=True, extra=logger_extra)
                             sys.exit(1)
@@ -201,7 +201,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                         qualifier = qualifier_data.claim
                         if qualifier not in new_claim.qualifiers.get(qualifier_prop, []):
                             logger.info("Adding qualifier %s: %s to [%s:, %s]", qualifier_prop, qualifier.getTarget(), prop, new_claim.getTarget(), extra=logger_extra)
-                            new_claim.addQualifier(qualifier, summary=f"Adding {qualifier.getID()} to claim with property {prop} from {provider.name}.{automated_hash_text}")
+                            new_claim.addQualifier(qualifier, summary=f"Adding {qualifier.getID()} to claim with property {prop} from {provider.name}.{automated_hash_text}", bot=True)
                         else:
                             for existing_qualifier in new_claim.qualifiers[qualifier_prop]:
                                 if existing_qualifier.getTarget() == qualifier.getTarget():
@@ -210,7 +210,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                                 if qualifier_data.skip_if_conflicting_exists:
                                     continue
                                 logger.info("Adding qualifier %s: %s to [%s:, %s]", qualifier_prop, qualifier.getTarget(), prop, new_claim.getTarget(), extra=logger_extra)
-                                new_claim.addQualifier(qualifier, summary=f"Adding {qualifier.getID()} to claim with property {prop} from {provider.name}.{automated_hash_text}")
+                                new_claim.addQualifier(qualifier, summary=f"Adding {qualifier.getID()} to claim with property {prop} from {provider.name}.{automated_hash_text}", bot=True)
                 for extra_reference in extra_prop_data.extra_references:
                     compatible = False
                     for existing_reference in new_claim.getSources():
@@ -221,7 +221,7 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                         continue
                     else:
                         logger.info("Adding reference to [%s: %s]", prop, new_claim.getTarget(), extra=logger_extra)
-                        new_claim.addSources(list(extra_reference.new_reference_props.values()), summary=f"Adding reference to claim with property {prop} from {provider.name}.{automated_hash_text}")
+                        new_claim.addSources(list(extra_reference.new_reference_props.values()), summary=f"Adding reference to claim with property {prop} from {provider.name}.{automated_hash_text}", bot=True)
                 add_or_update_references(provider, provider_id, new_claim, reference, automated_hash=automated_hash)
     return re_cycle
 

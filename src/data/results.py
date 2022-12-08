@@ -14,6 +14,7 @@ class Result:
     demographics: list[Demographics] = dataclasses.field(default_factory=list)
     start_date: datetime.datetime| pywikibot.WbTime | None = None
     end_date: datetime.datetime | pywikibot.WbTime | None = None
+    en_labels: set[str] = dataclasses.field(default_factory=set)
     volumes: int | None = None
     chapters: int | None = None
     
