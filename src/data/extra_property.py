@@ -50,6 +50,5 @@ class ExtraProperty:
     skip_if_conflicting_exists: bool = False
     skip_if_conflicting_language_exists: bool = False
     reference_only: bool = False
-    re_cycle_able: bool = False
     qualifiers: defaultdict[str, list[ExtraQualifier]] = dataclasses.field(default_factory=lambda: defaultdict(list))
     extra_references: list[ExtraReference] = dataclasses.field(default_factory=list)

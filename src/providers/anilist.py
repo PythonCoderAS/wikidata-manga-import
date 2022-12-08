@@ -1,10 +1,11 @@
 import pywikibot
 
 from ..data.extra_property import ExtraProperty, ExtraQualifier
+from ..data.link import Link
 from ..data.smart_precision_time import SmartPrecisionTime
 
 from ..abc.provider import Provider
-from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, japan_item, japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, hashtag_prop, anilist_id_prop, official_site_prop, title_prop, anilist_item
+from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, japan_item, japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, hashtag_prop, anilist_id_prop, title_prop, anilist_item
 from ..data.reference import Reference
 from ..data.results import Result
 from ..pywikibot_stub_types import WikidataReference
@@ -124,7 +125,7 @@ class AnilistProvider(Provider):
         if data["idMal"] is not None:
             claim = pywikibot.Claim(site, mal_id_prop)
             claim.setTarget(str(data["idMal"]))
-            result.other_properties[mal_id_prop].append(ExtraProperty(claim=claim, re_cycle_able=True))
+            result.other_properties[mal_id_prop].append(ExtraProperty(claim=claim))
         if data["genres"] is not None:
             for genre in data["genres"]:
                 if genre in self.genre_mapping:
@@ -157,14 +158,10 @@ class AnilistProvider(Provider):
             result.other_properties[hashtag_prop].append(ExtraProperty(claim=claim))
         if data["externalLinks"] is not None:
             for item in data["externalLinks"]:
-                if item["type"] == "INFO" or item["type"] == "STREAMING":
-                    claim = pywikibot.Claim(site, official_site_prop)
-                    claim.setTarget(item["url"])
-                    result.other_properties[official_site_prop].append(ExtraProperty(claim=claim, reference_only=True))
-                    if item["language"] in self.external_links_language_mapping:
-                        language_claim = pywikibot.Claim(site, language_prop)
-                        language_claim.setTarget(self.external_links_language_mapping[item["language"]])
-                        result.other_properties[official_site_prop][-1].qualifiers[language_prop].append(ExtraQualifier(language_claim))
+                if item["language"] in self.external_links_language_mapping:
+                    result.links.append(Link(item["url"], language=self.external_links_language_mapping[item["language"]]))
+                else:
+                    result.links.append(Link(item["url"]))
         if data["title"]:
             english = data["title"]["english"]
             native = data["title"]["native"]

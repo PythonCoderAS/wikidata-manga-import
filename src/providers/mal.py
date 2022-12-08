@@ -5,8 +5,8 @@ import time
 import pywikibot
 
 from ..abc.provider import Provider
-from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, official_site_prop, language_prop, mal_item
-from ..data.extra_property import ExtraProperty, ExtraQualifier
+from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, language_prop, mal_item
+from ..data.link import Link
 from ..data.reference import Reference
 from ..data.results import Result
 from ..pywikibot_stub_types import WikidataReference
@@ -120,15 +120,8 @@ class MALProvider(Provider):
             if demographic["mal_id"] in self.demographic_mapping:
                 result.demographics.append(self.demographic_mapping[demographic["mal_id"]])
         for external_item in data["external"]:
-            if external_item["name"] == "Official Site":
-                claim = pywikibot.Claim(site, official_site_prop)
-                claim.setTarget(external_item["url"])
-                result.other_properties[official_site_prop].append(ExtraProperty(claim))
-                if item.claims[language_prop]:
-                    language_item = item.claims[language_prop][0].getTarget()
-                    language_claim = pywikibot.Claim(site, language_prop)
-                    language_claim.setTarget(language_item)
-                    result.other_properties[official_site_prop][-1].qualifiers[language_prop].append(ExtraQualifier(language_claim, skip_if_conflicting_exists=True))
+            if external_item["name"] != "Wikipedia":
+                result.links.append(Link(external_item["url"]))
         return result
 
     def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:

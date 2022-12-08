@@ -1,4 +1,5 @@
 import enum
+import re
 import pywikibot
 import requests
 
@@ -10,10 +11,10 @@ start_prop = "P577"
 country_prop = "P495"
 language_prop = "P407"
 hashtag_prop = "P2572"
-official_site_prop = "P856"
 num_parts_prop = "P2635"
 title_prop = "P1476"
 romaji_title_prop = "P2125"
+described_at_url_prop = "P973"
 
 retrieved_prop = "P813"
 stated_at_prop = "P248"
@@ -27,8 +28,12 @@ anilist_id_prop = "P8731"
 md_id_prop = "P10589"
 mu_id_prop = "P11149"
 
-automated_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop]
+niconico_prop = "P11176"
+bookwalker_prop = "P11259"
+
+automated_create_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop, described_at_url_prop, niconico_prop, bookwalker_prop]
 automated_scan_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop]
+url_properties = [described_at_url_prop]
 
 japan_item = pywikibot.ItemPage(site, "Q17")
 korea_item = pywikibot.ItemPage(site, "Q884")
@@ -37,6 +42,7 @@ china_item = pywikibot.ItemPage(site, "Q148")
 japanese_lang_item = pywikibot.ItemPage(site, "Q5287")
 korean_lang_item = pywikibot.ItemPage(site, "Q9176")
 chinese_lang_item = pywikibot.ItemPage(site, "Q7850")
+english_lang_item = pywikibot.ItemPage(site, "Q1860")
 
 volume_item = pywikibot.ItemPage(site, "Q1238720")
 link_rot_item = pywikibot.ItemPage(site, "Q1193907")
@@ -45,6 +51,9 @@ mal_item = pywikibot.ItemPage(site, "Q4044680")
 anilist_item = pywikibot.ItemPage(site, "Q86470198")
 md_item = pywikibot.ItemPage(site, "Q110093307")
 mu_item = pywikibot.ItemPage(site, "Q114730827")
+
+niconico_regex = re.compile(r"seiga\.nicovideo\.jp/comic/(\d+)")
+bookwalker_regex = re.compile(r"bookwalker\.jp/(?:series|book)/(\d+)")
 
 class Genres(enum.Enum):
     action = pywikibot.ItemPage(site, 'Q15637293')
