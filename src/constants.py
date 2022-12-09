@@ -34,6 +34,7 @@ bookwalker_prop = "P11259"
 automated_create_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop, described_at_url_prop, niconico_prop, bookwalker_prop]
 automated_scan_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop]
 url_properties = [described_at_url_prop]
+url_blacklist: list[str | re.Pattern] = ["twitter.com", "youtube.com", "instagram.com", "pixiv.com"]
 
 japan_item = pywikibot.ItemPage(site, "Q17")
 korea_item = pywikibot.ItemPage(site, "Q884")

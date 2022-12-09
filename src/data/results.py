@@ -9,7 +9,7 @@ from ..data.smart_precision_time import SmartPrecisionTime
 from ..data.link import Link
 
 from .extra_property import ExtraProperty, ExtraQualifier
-from ..constants import Genres, Demographics, genre_prop, site, demographic_prop, start_prop, num_parts_prop, volume_item, niconico_regex, bookwalker_regex, bookwalker_prop, niconico_prop, described_at_url_prop, language_prop
+from ..constants import Genres, Demographics, genre_prop, site, demographic_prop, start_prop, num_parts_prop, volume_item, niconico_regex, bookwalker_regex, bookwalker_prop, niconico_prop, described_at_url_prop, language_prop, url_blacklist
 
 @dataclasses.dataclass
 class Result:
@@ -59,17 +59,19 @@ class Result:
             self.other_properties[num_parts_prop].append(ExtraProperty(num_parts_claim))
         for link in self.links:
             url = link.url
-            if match := niconico_regex.match(url):
+            if match := niconico_regex.search(url):
                 niconico_id = match.group(1)
                 niconico_claim = pywikibot.Claim(site, niconico_prop)
                 niconico_claim.setTarget(f"comic/{niconico_id}")
                 self.other_properties[niconico_prop].append(ExtraProperty(niconico_claim))
-            elif match := bookwalker_regex.match(url):
+            elif match := bookwalker_regex.search(url):
                 bookwalker_id = match.group(1)
                 bookwalker_claim = pywikibot.Claim(site, bookwalker_prop)
                 bookwalker_claim.setTarget(bookwalker_id)
                 self.other_properties[bookwalker_prop].append(ExtraProperty(bookwalker_claim))
             else:
+                if any(((blacklisted_url in url) if isinstance(blacklisted_url, str) else (blacklisted_url.search(url))) for blacklisted_url in url_blacklist):
+                    continue
                 url_claim = pywikibot.Claim(site, described_at_url_prop)
                 url_claim.setTarget(url)
                 extra_prop = ExtraProperty(url_claim)
