@@ -27,9 +27,12 @@ class ExtraReference:
         if auto_include_retrieved and not self.retrieved:
             now = pywikibot.Timestamp.now(tz=datetime.timezone.utc)
             self.retrieved = pywikibot.WbTime(year=now.year, month=now.month, day=now.day, precision=pywikibot.WbTime.PRECISION["day"])
-        retrieved_claim = pywikibot.Claim(site, retrieved_prop)
-        retrieved_claim.setTarget(self.retrieved)
-        self.new_reference_props[retrieved_prop] = retrieved_claim
+    
+    def set_retrieved(self):
+        if self.retrieved is not None:
+            retrieved_claim = pywikibot.Claim(site, retrieved_prop)
+            retrieved_claim.setTarget(self.retrieved)
+            self.new_reference_props[retrieved_prop] = retrieved_claim
 
     def is_compatible_reference(self, reference: WikidataReference) -> bool:
         if self.url_match_pattern and url_prop in reference:

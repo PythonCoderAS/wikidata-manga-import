@@ -6,7 +6,7 @@ import requests
 from ..data.link import Link
 
 from ..abc.provider import Provider
-from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, japan_item, japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, anilist_id_prop, md_id_prop, mu_id_prop, md_item, mu_item, english_lang_item
+from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, japan_item, japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, anilist_id_prop, md_id_prop, mu_id_prop, md_item, mu_item, english_lang_item, bookwalker_prop
 from ..data.reference import Reference
 from ..data.results import Result
 from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
@@ -68,6 +68,7 @@ class MangadexProvider(Provider):
     mu_new_url_regex = re.compile(r"https:\/\/www\.mangaupdates\.com\/series\/([0-9a-z]+)")
     mu_check_claim = pywikibot.Claim(site, stated_at_prop)
     mu_check_claim.setTarget(mu_item)
+    bw_regex_md = re.compile(r"series/(\d+)")
     
     def get(self, id: str, _) -> Result:
         r = self.session.get(f"{self.md_base}/manga/{id}")
@@ -118,6 +119,11 @@ class MangadexProvider(Provider):
                 claim = pywikibot.Claim(site, anilist_id_prop)
                 claim.setTarget(str(anilist_id))
                 result.other_properties[anilist_id_prop].append(ExtraProperty(claim=claim))
+            bw_id = data["links"].get("bw", "")
+            if match := self.bw_regex_md.search(bw_id):
+                claim = pywikibot.Claim(site, bookwalker_prop)
+                claim.setTarget(match.group(1))
+                result.other_properties[bookwalker_prop].append(ExtraProperty(claim=claim))
             mu_id: str | None = data["links"].get("mu", None)
             if mu_id:
                 if mu_id.isnumeric():
@@ -131,7 +137,7 @@ class MangadexProvider(Provider):
                                 claim = pywikibot.Claim(site, mu_id_prop)
                                 claim.setTarget(new_mu_id)
                                 extra_prop = ExtraProperty(claim=claim)
-                                extra_ref = ExtraReference(url_match_pattern=re.compile(r"https://www.mangaupdates.com/series.html?id=[0-9]+"))
+                                extra_ref = ExtraReference(url_match_pattern=re.compile(r"https://www.mangaupdates.com/series.html\?id=[0-9]+"))
                                 extra_ref.match_property_values[stated_at_prop] = extra_ref.new_reference_props[stated_at_prop] = self.mu_check_claim
                                 url_ref_claim = pywikibot.Claim(site, url_prop)
                                 url_ref_claim.setTarget(f"https://www.mangaupdates.com/series.html?id={mu_id}")

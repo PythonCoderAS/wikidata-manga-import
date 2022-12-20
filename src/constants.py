@@ -54,7 +54,7 @@ md_item = pywikibot.ItemPage(site, "Q110093307")
 mu_item = pywikibot.ItemPage(site, "Q114730827")
 
 niconico_regex = re.compile(r"seiga\.nicovideo\.jp/comic/(\d+)")
-bookwalker_regex = re.compile(r"bookwalker\.jp/(?:series|book)/(\d+)")
+bookwalker_regex = re.compile(r"(?:(?!:global).)*bookwalker\.jp/(?:series|book)/(\d+)")
 
 class Genres(enum.Enum):
     action = pywikibot.ItemPage(site, 'Q15637293')

@@ -64,7 +64,7 @@ class Result:
                 niconico_claim = pywikibot.Claim(site, niconico_prop)
                 niconico_claim.setTarget(f"comic/{niconico_id}")
                 self.other_properties[niconico_prop].append(ExtraProperty(niconico_claim))
-            elif match := bookwalker_regex.search(url):
+            elif match := "global.bookwalker.jp" not in url and bookwalker_regex.search(url):
                 bookwalker_id = match.group(1)
                 bookwalker_claim = pywikibot.Claim(site, bookwalker_prop)
                 bookwalker_claim.setTarget(bookwalker_id)

@@ -96,7 +96,6 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                             if new_claim.getRank() != existing_claim.getRank():
                                 logger.info("Changing rank of [%s: %s] from %s to %s", prop, existing_claim.getTarget(), existing_claim.getRank(), new_claim.getRank(), extra=logger_extra)
                                 existing_claim.changeRank(new_claim.getRank(), bot=True)
-                                ret_results.ranks_modified += 1
                             break
                     else:
                         if extra_prop_data.skip_if_conflicting_language_exists and prop in item.claims: # type: ignore
@@ -151,11 +150,10 @@ def act_on_property(item: pywikibot.ItemPage, claims: list[pywikibot.Claim], pro
                     if compatible:
                         continue
                     else:
+                        extra_reference.set_retrieved()
                         logger.info("Adding reference to [%s: %s]", prop, new_claim.getTarget(), extra=logger_extra)
                         new_claim.addSources(list(extra_reference.new_reference_props.values()), summary=f"Adding reference to claim with property {prop} from {provider.name}.{automated_hash_text}", bot=True)
-                        ret_results.references_added += 1
-                if add_or_update_references(provider, provider_id, new_claim, reference, automated_hash=automated_hash):
-                    ret_results.references_added += 1
+                add_or_update_references(provider, provider_id, new_claim, reference, automated_hash=automated_hash)
     return ret_results
 
 def act_on_item(item: pywikibot.ItemPage, automated_hash: str = ""):
@@ -166,4 +164,5 @@ def act_on_item(item: pywikibot.ItemPage, automated_hash: str = ""):
             if act_on_property(item, claims[prop], provider, automated_hash=automated_hash).changed() and index > 0:
                 changed = True
     if changed:
+        logger.warning("Item changed, re-running collection.", extra={"provider": None, "itemId": None})
         return act_on_item(item, automated_hash=automated_hash)
