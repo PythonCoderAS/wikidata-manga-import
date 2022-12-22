@@ -3,6 +3,7 @@ import argparse
 import logging
 import os
 import random
+from typing import Union
 
 import pywikibot
 from pywikibot.pagegenerators import WikidataSPARQLPageGenerator
@@ -27,7 +28,9 @@ parser.add_argument("--copy-from", type=str, help="The item to copy labels from.
 
 
 def act_on_item_string(
-    item_string: str, copy_from_item_string: str | None = None, automated_hash: str = ""
+    item_string: str,
+    copy_from_item_string: Union[str, None] = None,
+    automated_hash: str = "",
 ):
     item = pywikibot.ItemPage(site, item_string)
     act_on_item(item, automated_hash=automated_hash)

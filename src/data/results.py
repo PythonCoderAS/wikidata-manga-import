@@ -1,6 +1,7 @@
 import dataclasses
 import datetime
 from collections import defaultdict
+from typing import Union
 
 import pywikibot
 
@@ -40,10 +41,10 @@ from .extra_property import ExtraProperty, ExtraQualifier
 class Result:
     genres: list[Genres] = dataclasses.field(default_factory=list)
     demographics: list[Demographics] = dataclasses.field(default_factory=list)
-    start_date: datetime.datetime | pywikibot.WbTime | None = None
-    end_date: datetime.datetime | pywikibot.WbTime | None = None
-    volumes: int | None = None
-    chapters: int | None = None
+    start_date: Union[datetime.datetime, pywikibot.WbTime] | None = None
+    end_date: Union[datetime.datetime, pywikibot.WbTime] | None = None
+    volumes: Union[int, None] = None
+    chapters: Union[int, None] = None
     links: list[Link] = dataclasses.field(default_factory=list)
 
     other_properties: defaultdict[str, list[ExtraProperty]] = dataclasses.field(

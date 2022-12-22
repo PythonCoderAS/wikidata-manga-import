@@ -2,6 +2,7 @@ import datetime
 import logging
 import re
 import time
+from typing import Union
 
 import pywikibot
 
@@ -81,7 +82,7 @@ class MALProvider(Provider):
     }
 
     @classmethod
-    def get_precision(cls, date_string) -> int | None:
+    def get_precision(cls, date_string) -> Union[int, None]:
         if cls.month_day_year_regex.match(date_string):
             return pywikibot.WbTime.PRECISION["day"]
         elif cls.month_year_regex.match(date_string):

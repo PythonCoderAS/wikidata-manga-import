@@ -1,5 +1,6 @@
 import datetime
 import re
+from typing import Union
 
 import pywikibot
 import requests
@@ -111,7 +112,7 @@ class MangadexProvider(Provider):
                 result.demographics.append(
                     self.demographic_map[data["publicationDemographic"]]
                 )
-        language: pywikibot.ItemPage | None = None
+        language: Union[pywikibot.ItemPage, None] = None
         if data["originalLanguage"]:
             if data["originalLanguage"] in self.country_code_mapping:
                 country, language = self.country_code_mapping[data["originalLanguage"]]
@@ -160,7 +161,7 @@ class MangadexProvider(Provider):
                 result.other_properties[bookwalker_prop].append(
                     ExtraProperty(claim=claim)
                 )
-            mu_id: str | None = data["links"].get("mu", None)
+            mu_id: Union[str, None] = data["links"].get("mu", None)
             if mu_id:
                 if mu_id.isnumeric():
                     try:

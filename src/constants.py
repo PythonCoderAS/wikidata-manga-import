@@ -1,5 +1,6 @@
 import enum
 import re
+from typing import Union
 
 import pywikibot
 from requests_cache import CachedSession
@@ -59,7 +60,7 @@ automated_create_properties = [
 ]
 automated_scan_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop]
 url_properties = [described_at_url_prop]
-url_blacklist: list[str | re.Pattern] = [
+url_blacklist: list[Union[str, re.Pattern]] = [
     "twitter.com",
     "youtube.com",
     "instagram.com",

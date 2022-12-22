@@ -3,6 +3,7 @@ import re
 import sys
 import time
 from datetime import datetime
+from typing import Union
 
 import pywikibot
 
@@ -77,7 +78,7 @@ def add_or_update_references(
 
 
 def enum_item_in_item_list(
-    item: Genres | Demographics, existing_item_list: list[pywikibot.Claim]
+    item: Union[Genres, Demographics], existing_item_list: list[pywikibot.Claim]
 ) -> bool:
     for existing_item in existing_item_list:
         if existing_item.getTarget().id == item.value.id:  # type: ignore

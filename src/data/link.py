@@ -1,4 +1,5 @@
 import dataclasses
+from typing import Union
 
 import pywikibot
 
@@ -7,4 +8,4 @@ import pywikibot
 class Link:
     url: str
     """The item for the language of the link."""
-    language: pywikibot.ItemPage | None = None
+    language: Union[pywikibot.ItemPage, None] = None
