@@ -11,6 +11,7 @@ site: pywikibot.DataSite = pywikibot.Site("wikidata", "wikidata")  # type: ignor
 genre_prop = "P136"
 demographic_prop = "P2360"
 start_prop = "P580"
+end_prop = "P582"
 country_prop = "P495"
 language_prop = "P407"
 hashtag_prop = "P2572"

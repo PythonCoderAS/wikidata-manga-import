@@ -18,6 +18,7 @@ from ..constants import (
     bookwalker_regex,
     demographic_prop,
     described_at_url_prop,
+    end_prop,
     genre_prop,
     inkr_prop,
     inkr_regex,
@@ -41,8 +42,8 @@ from .extra_property import ExtraProperty, ExtraQualifier
 class Result:
     genres: list[Genres] = dataclasses.field(default_factory=list)
     demographics: list[Demographics] = dataclasses.field(default_factory=list)
-    start_date: Union[datetime.datetime, pywikibot.WbTime] | None = None
-    end_date: Union[datetime.datetime, pywikibot.WbTime] | None = None
+    start_date: Union[datetime.datetime, pywikibot.WbTime, None] = None
+    end_date: Union[datetime.datetime, pywikibot.WbTime, None] = None
     volumes: Union[int, None] = None
     chapters: Union[int, None] = None
     links: list[Link] = dataclasses.field(default_factory=list)
@@ -86,6 +87,18 @@ class Result:
             start_claim = pywikibot.Claim(site, start_prop)
             start_claim.setTarget(time_obj)
             self.other_properties[start_prop].append(ExtraProperty(start_claim))
+        if self.end_date:
+            if isinstance(self.end_date, datetime.datetime):
+                time_obj = SmartPrecisionTime(
+                    year=self.end_date.year,
+                    month=self.end_date.month,
+                    day=self.end_date.day,
+                )
+            else:
+                time_obj = self.end_date
+            end_claim = pywikibot.Claim(site, end_prop)
+            end_claim.setTarget(time_obj)
+            self.other_properties[end_prop].append(ExtraProperty(end_claim))
         if self.volumes:
             quantity = pywikibot.WbQuantity(self.volumes, volume_item, site=site)
             num_parts_claim = pywikibot.Claim(site, num_parts_prop)
