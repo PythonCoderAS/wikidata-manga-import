@@ -7,7 +7,7 @@ from pywikibot.pagegenerators import WikidataSPARQLPageGenerator
 import logging
 
 from src import CustomFormatter
-from src.constants import site, automated_scan_properties
+from src.constants import site, automated_scan_properties, session
 from src.main import act_on_item
 from src.copy_labels import copy_labels
 
@@ -44,6 +44,8 @@ def main(argv=None):
         automated_hash = "{:x}".format(random.randrange(0, 2**48))
         for item in WikidataSPARQLPageGenerator(complete_sparql, site=site):
             act_on_item(item, automated_hash=automated_hash)
+            session.remove_expired_responses()
+
 
     if args.input_file is None and args.item is None:
         parser.error("You must specify either an input file or an item.")

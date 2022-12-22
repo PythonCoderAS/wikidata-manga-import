@@ -1,13 +1,13 @@
 import enum
 import re
 import pywikibot
-import requests
+from requests_cache import CachedSession
 
 site: pywikibot.DataSite = pywikibot.Site("wikidata", "wikidata") # type: ignore
 
 genre_prop = "P136"
 demographic_prop = "P2360"
-start_prop = "P577"
+start_prop = "P580"
 country_prop = "P495"
 language_prop = "P407"
 hashtag_prop = "P2572"
@@ -31,10 +31,11 @@ mu_id_prop = "P11149"
 niconico_prop = "P11176"
 bookwalker_prop = "P11259"
 
-automated_create_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop, niconico_prop, bookwalker_prop, num_parts_prop]
+automated_create_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop, niconico_prop, bookwalker_prop,
+                               num_parts_prop, demographic_prop]
 automated_scan_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop]
 url_properties = [described_at_url_prop]
-url_blacklist: list[str | re.Pattern] = ["twitter.com", "youtube.com", "instagram.com", "pixiv.com", "pixiv.net", "webcomicsapp.com"]
+url_blacklist: list[str | re.Pattern] = ["twitter.com", "youtube.com", "instagram.com", "pixiv.com", "pixiv.net"]
 
 japan_item = pywikibot.ItemPage(site, "Q17")
 korea_item = pywikibot.ItemPage(site, "Q884")
@@ -112,5 +113,5 @@ language_item_to_code_map = {
     chinese_lang_item: 'zh'
 }
 
-session = requests.Session()
+session = CachedSession(backend='memory')
 session.headers["user-agent"] = "AniMangaDBImportBot/Wikidata (https://wikidata.org/wiki/User:AniMangaDBImportBot) (abuse: https://wikidata.org/wiki/User_talk:RPI2026F1)"

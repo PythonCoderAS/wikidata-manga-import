@@ -20,8 +20,6 @@ class ExtraReference:
     match_property_values: dict[str, pywikibot.Claim] = dataclasses.field(default_factory=dict)
     url_match_pattern: Pattern[str] | None = None
     new_reference_props: dict[str, pywikibot.Claim] = dataclasses.field(default_factory=dict)
-    auto_include_retrieved: dataclasses.InitVar[bool] = True
-    retrieved: pywikibot.WbTime | None = None
 
     def __post_init__(self, auto_include_retrieved: bool):
         if auto_include_retrieved and not self.retrieved:
