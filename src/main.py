@@ -1,6 +1,7 @@
 import logging
 import re
 import sys
+import time
 from datetime import datetime
 
 import pywikibot
@@ -310,13 +311,31 @@ def act_on_item(item: pywikibot.ItemPage, automated_hash: str = ""):
     changed = False
     for index, (prop, provider) in enumerate(providers.items()):
         if prop in claims:
-            if (
-                act_on_property(
-                    item, claims[prop], provider, automated_hash=automated_hash
-                ).changed()
-                and index > 0
-            ):
-                changed = True
+            retries = 3
+            while retries >= 0:
+                try:
+                    if (
+                        act_on_property(
+                            item, claims[prop], provider, automated_hash=automated_hash
+                        ).changed()
+                        and index > 0
+                    ):
+                        changed = True
+                except pywikibot.exceptions.APIError as e:
+                    retries -= 1
+                    if retries < 0:
+                        logger.error("Ran out of retries on APIError", exc_info=e)
+                        raise
+                    else:
+                        logger.warning(
+                            "APIError, retrying %s more times",
+                            retries,
+                            extra={"provider": None, "itemId": None},
+                        )
+                        time.sleep(5)
+                else:
+                    break
+
     if changed:
         logger.warning(
             "Item changed, re-running collection.",
