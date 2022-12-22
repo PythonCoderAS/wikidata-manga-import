@@ -1,3 +1,5 @@
+import re
+
 import pywikibot
 
 from ..abc.provider import Provider
