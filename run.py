@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 import argparse
+import logging
 import os
 import random
+
 import pywikibot
 from pywikibot.pagegenerators import WikidataSPARQLPageGenerator
-import logging
 
 from src import CustomFormatter
-from src.constants import site, automated_scan_properties, session
-from src.main import act_on_item
+from src.constants import automated_scan_properties, session, site
 from src.copy_labels import copy_labels
+from src.main import act_on_item
 
 parser = argparse.ArgumentParser("wikidata-anime-import")
 parser.add_argument(

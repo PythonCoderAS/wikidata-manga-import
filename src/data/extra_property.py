@@ -1,11 +1,11 @@
-from collections import defaultdict
+import dataclasses
 import datetime
+from collections import defaultdict
 from re import Pattern
 
-import dataclasses
 import pywikibot
 
-from ..constants import site, url_prop, retrieved_prop
+from ..constants import retrieved_prop, site, url_prop
 from ..pywikibot_stub_types import WikidataReference
 
 

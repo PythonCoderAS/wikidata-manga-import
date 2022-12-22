@@ -2,18 +2,19 @@ import datetime
 import logging
 import re
 import time
+
 import pywikibot
 
 from ..abc.provider import Provider
 from ..constants import (
-    Genres,
     Demographics,
+    Genres,
+    language_prop,
+    mal_id_prop,
+    mal_item,
     site,
     stated_at_prop,
     url_prop,
-    mal_id_prop,
-    language_prop,
-    mal_item,
 )
 from ..data.link import Link
 from ..data.reference import Reference

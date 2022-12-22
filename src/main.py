@@ -1,32 +1,32 @@
-from datetime import datetime
+import logging
 import re
 import sys
+from datetime import datetime
+
 import pywikibot
-import logging
 
-from .data.results import Result
-from .data.provider_results import ProviderResults
-from .data.extra_property import ExtraProperty, ExtraQualifier
-from .data.smart_precision_time import SmartPrecisionTime
-
+from .abc.provider import Provider
 from .constants import (
     Demographics,
     Genres,
-    site,
-    retrieved_prop,
-    stated_at_prop,
-    url_prop,
     archive_date_prop,
     archive_url_prop,
+    automated_create_properties,
     deprecated_reason_prop,
     link_rot_item,
-    automated_create_properties,
+    retrieved_prop,
+    site,
+    stated_at_prop,
+    url_prop,
     url_properties,
 )
+from .data.extra_property import ExtraProperty, ExtraQualifier
+from .data.provider_results import ProviderResults
 from .data.reference import Reference
-from .pywikibot_stub_types import WikidataReference
-from .abc.provider import Provider
+from .data.results import Result
+from .data.smart_precision_time import SmartPrecisionTime
 from .providers import providers
+from .pywikibot_stub_types import WikidataReference
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
+
 import pywikibot
 
-from ..data.reference import Reference
 from ..constants import session as requests_session
-
-from ..pywikibot_stub_types import WikidataReference
+from ..data.reference import Reference
 from ..data.results import Result
+from ..pywikibot_stub_types import WikidataReference
 
 
 class Provider(ABC):

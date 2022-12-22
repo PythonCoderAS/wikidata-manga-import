@@ -1,5 +1,6 @@
-import pywikibot
 from typing import Optional
+
+import pywikibot
 
 
 class SmartPrecisionTime(pywikibot.WbTime):

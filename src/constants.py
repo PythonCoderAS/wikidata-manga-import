@@ -1,5 +1,6 @@
 import enum
 import re
+
 import pywikibot
 from requests_cache import CachedSession
 

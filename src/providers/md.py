@@ -4,36 +4,35 @@ import re
 import pywikibot
 import requests
 
-from ..data.link import Link
-
 from ..abc.provider import Provider
 from ..constants import (
-    Genres,
     Demographics,
-    retrieved_prop,
-    site,
-    stated_at_prop,
-    url_prop,
-    mal_id_prop,
+    Genres,
+    anilist_id_prop,
+    bookwalker_prop,
+    china_item,
+    chinese_lang_item,
+    country_prop,
+    english_lang_item,
     japan_item,
     japanese_lang_item,
     korea_item,
     korean_lang_item,
-    china_item,
-    chinese_lang_item,
-    country_prop,
     language_prop,
-    anilist_id_prop,
+    mal_id_prop,
     md_id_prop,
-    mu_id_prop,
     md_item,
+    mu_id_prop,
     mu_item,
-    english_lang_item,
-    bookwalker_prop,
+    retrieved_prop,
+    site,
+    stated_at_prop,
+    url_prop,
 )
+from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
+from ..data.link import Link
 from ..data.reference import Reference
 from ..data.results import Result
-from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
 from ..pywikibot_stub_types import WikidataReference
 
 

@@ -1,32 +1,31 @@
 import pywikibot
 
-from ..data.extra_property import ExtraProperty, ExtraQualifier
-from ..data.link import Link
-from ..data.smart_precision_time import SmartPrecisionTime
-
 from ..abc.provider import Provider
 from ..constants import (
-    Genres,
     Demographics,
-    site,
-    stated_at_prop,
-    url_prop,
-    mal_id_prop,
+    Genres,
+    anilist_id_prop,
+    anilist_item,
+    china_item,
+    chinese_lang_item,
+    country_prop,
+    hashtag_prop,
     japan_item,
     japanese_lang_item,
     korea_item,
     korean_lang_item,
-    china_item,
-    chinese_lang_item,
-    country_prop,
     language_prop,
-    hashtag_prop,
-    anilist_id_prop,
+    mal_id_prop,
+    site,
+    stated_at_prop,
     title_prop,
-    anilist_item,
+    url_prop,
 )
+from ..data.extra_property import ExtraProperty, ExtraQualifier
+from ..data.link import Link
 from ..data.reference import Reference
 from ..data.results import Result
+from ..data.smart_precision_time import SmartPrecisionTime
 from ..pywikibot_stub_types import WikidataReference
 
 

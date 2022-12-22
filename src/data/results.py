@@ -1,31 +1,29 @@
-from collections import defaultdict
-
 import dataclasses
 import datetime
+from collections import defaultdict
 
 import pywikibot
 
-from ..data.smart_precision_time import SmartPrecisionTime
-from ..data.link import Link
-
-from .extra_property import ExtraProperty, ExtraQualifier
 from ..constants import (
-    Genres,
     Demographics,
-    genre_prop,
-    site,
-    demographic_prop,
-    start_prop,
-    num_parts_prop,
-    volume_item,
-    niconico_regex,
-    bookwalker_regex,
+    Genres,
     bookwalker_prop,
-    niconico_prop,
+    bookwalker_regex,
+    demographic_prop,
     described_at_url_prop,
+    genre_prop,
     language_prop,
+    niconico_prop,
+    niconico_regex,
+    num_parts_prop,
+    site,
+    start_prop,
     url_blacklist,
+    volume_item,
 )
+from ..data.link import Link
+from ..data.smart_precision_time import SmartPrecisionTime
+from .extra_property import ExtraProperty, ExtraQualifier
 
 
 @dataclasses.dataclass

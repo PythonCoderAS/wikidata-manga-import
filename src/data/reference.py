@@ -1,6 +1,7 @@
 import dataclasses
-import pywikibot
 import datetime
+
+import pywikibot
 
 
 @dataclasses.dataclass
