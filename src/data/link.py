@@ -2,6 +2,7 @@ import dataclasses
 
 import pywikibot
 
+
 @dataclasses.dataclass
 class Link:
     url: str

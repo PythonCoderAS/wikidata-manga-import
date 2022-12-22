@@ -7,13 +7,35 @@ import requests
 from ..data.link import Link
 
 from ..abc.provider import Provider
-from ..constants import Genres, Demographics, retrieved_prop, site, stated_at_prop, url_prop, mal_id_prop, japan_item, \
-    japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, \
-    anilist_id_prop, md_id_prop, mu_id_prop, md_item, mu_item, english_lang_item, bookwalker_prop
+from ..constants import (
+    Genres,
+    Demographics,
+    retrieved_prop,
+    site,
+    stated_at_prop,
+    url_prop,
+    mal_id_prop,
+    japan_item,
+    japanese_lang_item,
+    korea_item,
+    korean_lang_item,
+    china_item,
+    chinese_lang_item,
+    country_prop,
+    language_prop,
+    anilist_id_prop,
+    md_id_prop,
+    mu_id_prop,
+    md_item,
+    mu_item,
+    english_lang_item,
+    bookwalker_prop,
+)
 from ..data.reference import Reference
 from ..data.results import Result
 from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
 from ..pywikibot_stub_types import WikidataReference
+
 
 class MangadexProvider(Provider):
     name = "MangaDex"
@@ -36,7 +58,7 @@ class MangadexProvider(Provider):
         "5920b825-4181-4a17-beeb-9918b0ff7a30": Genres.yaoi,
         "5fff9cde-849c-4d78-aab0-0d52b2ee1d25": Genres.survival,
         "631ef465-9aba-4afb-b0fc-ea10efe274a8": Genres.zombie,
-        "65761a2a-415e-47f3-bef2-a9dababba7a6": Genres.harem, # Reverse harem = harem
+        "65761a2a-415e-47f3-bef2-a9dababba7a6": Genres.harem,  # Reverse harem = harem
         "69964a64-2f90-4d33-beeb-f3ed2875eb4c": Genres.sports,
         "81c836c9-914a-4eca-981a-560dad663e73": Genres.magical_girl,
         "87cc87cd-a395-47af-b27a-93258283bbc6": Genres.adventure,
@@ -58,21 +80,23 @@ class MangadexProvider(Provider):
         "shounen": Demographics.shonen,
         "shoujo": Demographics.shojo,
         "josei": Demographics.josei,
-        "seinen": Demographics.seinen
+        "seinen": Demographics.seinen,
     }
 
     country_code_mapping: dict[str, tuple[pywikibot.ItemPage, pywikibot.ItemPage]] = {
         "ja": (japan_item, japanese_lang_item),
         "ko": (korea_item, korean_lang_item),
         "zh": (china_item, chinese_lang_item),
-        "zh-hk": (china_item, chinese_lang_item)
+        "zh-hk": (china_item, chinese_lang_item),
     }
 
-    mu_new_url_regex = re.compile(r"https:\/\/www\.mangaupdates\.com\/series\/([0-9a-z]+)")
+    mu_new_url_regex = re.compile(
+        r"https:\/\/www\.mangaupdates\.com\/series\/([0-9a-z]+)"
+    )
     mu_check_claim = pywikibot.Claim(site, stated_at_prop)
     mu_check_claim.setTarget(mu_item)
     bw_regex_md = re.compile(r"series/(\d+)")
-    
+
     def get(self, id: str, _) -> Result:
         r = self.session.get(f"{self.md_base}/manga/{id}")
         r.raise_for_status()
@@ -85,17 +109,23 @@ class MangadexProvider(Provider):
                     result.genres.append(self.genre_map[tag["id"]])
         if data["publicationDemographic"]:
             if data["publicationDemographic"] in self.demographic_map:
-                result.demographics.append(self.demographic_map[data["publicationDemographic"]])
+                result.demographics.append(
+                    self.demographic_map[data["publicationDemographic"]]
+                )
         language: pywikibot.ItemPage | None = None
         if data["originalLanguage"]:
             if data["originalLanguage"] in self.country_code_mapping:
                 country, language = self.country_code_mapping[data["originalLanguage"]]
                 country_claim = pywikibot.Claim(site, country_prop)
                 country_claim.setTarget(country)
-                result.other_properties[country_prop].append(ExtraProperty(claim=country_claim, skip_if_conflicting_exists=True))
+                result.other_properties[country_prop].append(
+                    ExtraProperty(claim=country_claim, skip_if_conflicting_exists=True)
+                )
                 language_claim = pywikibot.Claim(site, language_prop)
                 language_claim.setTarget(language)
-                result.other_properties[language_prop].append(ExtraProperty(claim=language_claim))
+                result.other_properties[language_prop].append(
+                    ExtraProperty(claim=language_claim)
+                )
         if data["lastVolume"]:
             try:
                 result.volumes = int(data["lastVolume"])
@@ -121,17 +151,23 @@ class MangadexProvider(Provider):
             if anilist_id:
                 claim = pywikibot.Claim(site, anilist_id_prop)
                 claim.setTarget(str(anilist_id))
-                result.other_properties[anilist_id_prop].append(ExtraProperty(claim=claim))
+                result.other_properties[anilist_id_prop].append(
+                    ExtraProperty(claim=claim)
+                )
             bw_id = data["links"].get("bw", "")
             if match := self.bw_regex_md.search(bw_id):
                 claim = pywikibot.Claim(site, bookwalker_prop)
                 claim.setTarget(match.group(1))
-                result.other_properties[bookwalker_prop].append(ExtraProperty(claim=claim))
+                result.other_properties[bookwalker_prop].append(
+                    ExtraProperty(claim=claim)
+                )
             mu_id: str | None = data["links"].get("mu", None)
             if mu_id:
                 if mu_id.isnumeric():
                     try:
-                        r = self.session.get(f"https://www.mangaupdates.com/series.html?id={mu_id}")
+                        r = self.session.get(
+                            f"https://www.mangaupdates.com/series.html?id={mu_id}"
+                        )
                         r.raise_for_status()
                         if r.status_code == 200:
                             text = r.text
@@ -140,14 +176,28 @@ class MangadexProvider(Provider):
                                 claim = pywikibot.Claim(site, mu_id_prop)
                                 claim.setTarget(new_mu_id)
                                 extra_prop = ExtraProperty(claim=claim)
-                                extra_ref = ExtraReference(url_match_pattern=re.compile(r"https://www.mangaupdates.com/series.html\?id=[0-9]+"))
-                                extra_ref.match_property_values[stated_at_prop] = extra_ref.new_reference_props[stated_at_prop] = self.mu_check_claim
+                                extra_ref = ExtraReference(
+                                    url_match_pattern=re.compile(
+                                        r"https://www.mangaupdates.com/series.html\?id=[0-9]+"
+                                    )
+                                )
+                                extra_ref.match_property_values[
+                                    stated_at_prop
+                                ] = extra_ref.new_reference_props[
+                                    stated_at_prop
+                                ] = self.mu_check_claim
                                 url_ref_claim = pywikibot.Claim(site, url_prop)
-                                url_ref_claim.setTarget(f"https://www.mangaupdates.com/series.html?id={mu_id}")
+                                url_ref_claim.setTarget(
+                                    f"https://www.mangaupdates.com/series.html?id={mu_id}"
+                                )
                                 extra_ref.new_reference_props[url_prop] = url_ref_claim
                                 retrieved_claim = pywikibot.Claim(site, retrieved_prop)
-                                retrieved_claim.setTarget(pywikibot.Timestamp.now(tz=datetime.timezone.utc))
-                                extra_ref.new_reference_props[retrieved_prop] = retrieved_claim
+                                retrieved_claim.setTarget(
+                                    pywikibot.Timestamp.now(tz=datetime.timezone.utc)
+                                )
+                                extra_ref.new_reference_props[
+                                    retrieved_prop
+                                ] = retrieved_claim
                                 extra_prop.extra_references.append(extra_ref)
                                 result.other_properties[mu_id_prop].append(extra_prop)
                     except (requests.HTTPError, UnicodeDecodeError):
@@ -165,14 +215,16 @@ class MangadexProvider(Provider):
                 result.links.append(Link(engtl_link, language=english_lang_item))
         return result
 
-    def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:
+    def compute_similar_reference(
+        self, potential_ref: WikidataReference, id: str
+    ) -> bool:
         if stated_at_prop in potential_ref:
             for claim in potential_ref[stated_at_prop]:
-                if claim.getTarget().id == md_item.id: # type: ignore
+                if claim.getTarget().id == md_item.id:  # type: ignore
                     return True
         if url_prop in potential_ref:
             for claim in potential_ref[url_prop]:
-                if re.search(rf"https://mangadex.org/(manga|title)/{id}", claim.getTarget().lower()): # type: ignore
+                if re.search(rf"https://mangadex.org/(manga|title)/{id}", claim.getTarget().lower()):  # type: ignore
                     return True
         if md_id_prop in potential_ref:
             for claim in potential_ref[md_id_prop]:

@@ -4,18 +4,38 @@ from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
 from ..data.smart_precision_time import SmartPrecisionTime
 
 from ..abc.provider import Provider
-from ..constants import Genres, Demographics, site, stated_at_prop, url_prop, mal_id_prop, japan_item, \
-    japanese_lang_item, korea_item, korean_lang_item, china_item, chinese_lang_item, country_prop, language_prop, \
-    hashtag_prop, anilist_id_prop, romaji_title_prop, title_prop, mu_item, mu_id_prop
+from ..constants import (
+    Genres,
+    Demographics,
+    site,
+    stated_at_prop,
+    url_prop,
+    mal_id_prop,
+    japan_item,
+    japanese_lang_item,
+    korea_item,
+    korean_lang_item,
+    china_item,
+    chinese_lang_item,
+    country_prop,
+    language_prop,
+    hashtag_prop,
+    anilist_id_prop,
+    romaji_title_prop,
+    title_prop,
+    mu_item,
+    mu_id_prop,
+)
 from ..data.reference import Reference
 from ..data.results import Result
 from ..pywikibot_stub_types import WikidataReference
+
 
 class MangaUpdatesProvider(Provider):
     name = "MangaUpdates"
 
     mu_base = "https://api.mangaupdates.com/v1"
-    
+
     genre_mapping = {
         "Action": Genres.action,
         "Adult": Genres.hentai,
@@ -47,7 +67,7 @@ class MangaUpdatesProvider(Provider):
         "Sports": Genres.sports,
         "Supernatural": Genres.supernatural,
         "Yaoi": Genres.yaoi,
-        "Yuri": Genres.yuri
+        "Yuri": Genres.yuri,
     }
 
     @staticmethod
@@ -73,15 +93,17 @@ class MangaUpdatesProvider(Provider):
         if year.isnumeric():
             res.start_date = pywikibot.WbTime(year=int(year))
         return res
-        
-    def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:
+
+    def compute_similar_reference(
+        self, potential_ref: WikidataReference, id: str
+    ) -> bool:
         if stated_at_prop in potential_ref:
             for claim in potential_ref[stated_at_prop]:
-                if claim.getTarget().id == mu_item.id: # type: ignore
+                if claim.getTarget().id == mu_item.id:  # type: ignore
                     return True
         if url_prop in potential_ref:
             for claim in potential_ref[url_prop]:
-                if re.search(rf"https://www.mangaupdates.com/series/{id}", claim.getTarget().lower()): # type: ignore
+                if re.search(rf"https://www.mangaupdates.com/series/{id}", claim.getTarget().lower()):  # type: ignore
                     return True
         if mu_id_prop in potential_ref:
             for claim in potential_ref[mu_id_prop]:
@@ -90,4 +112,6 @@ class MangaUpdatesProvider(Provider):
         return False
 
     def get_reference(self, id: str) -> Reference:
-        return Reference(stated_in=mu_item, url=f"https://www.mangaupdates.com/series/{id}")
+        return Reference(
+            stated_in=mu_item, url=f"https://www.mangaupdates.com/series/{id}"
+        )

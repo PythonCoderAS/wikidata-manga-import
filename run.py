@@ -12,17 +12,28 @@ from src.main import act_on_item
 from src.copy_labels import copy_labels
 
 parser = argparse.ArgumentParser("wikidata-anime-import")
-parser.add_argument("-a", "--automatic", action="store_true", help="Ruins in automatic mode, meaning it will only apply properties in src.constants.automated_properties.")
-parser.add_argument("-f", "--input-file", type=str, help="The file of items to read from.")
+parser.add_argument(
+    "-a",
+    "--automatic",
+    action="store_true",
+    help="Ruins in automatic mode, meaning it will only apply properties in src.constants.automated_properties.",
+)
+parser.add_argument(
+    "-f", "--input-file", type=str, help="The file of items to read from."
+)
 parser.add_argument("-i", "--item", type=str, help="The item to import data for.")
 parser.add_argument("--copy-from", type=str, help="The item to copy labels from.")
 
-def act_on_item_string(item_string: str, copy_from_item_string: str | None = None, automated_hash: str = ""):
+
+def act_on_item_string(
+    item_string: str, copy_from_item_string: str | None = None, automated_hash: str = ""
+):
     item = pywikibot.ItemPage(site, item_string)
     act_on_item(item, automated_hash=automated_hash)
     if copy_from_item_string:
         copy_from_item = pywikibot.ItemPage(site, copy_from_item_string)
         copy_labels(copy_from_item, item)
+
 
 def main(argv=None):
     args = parser.parse_args(argv)
@@ -39,13 +50,14 @@ def main(argv=None):
         handler.setLevel(logging.INFO)
         logger.removeHandler(logger.handlers[0])
         logger.addHandler(handler)
-        props_sparql = " UNION ".join(["{ ?item p:%s ?_. }" % property for property in automated_scan_properties])
+        props_sparql = " UNION ".join(
+            ["{ ?item p:%s ?_. }" % property for property in automated_scan_properties]
+        )
         complete_sparql = "SELECT DISTINCT ?item WHERE { %s }" % props_sparql
         automated_hash = "{:x}".format(random.randrange(0, 2**48))
         for item in WikidataSPARQLPageGenerator(complete_sparql, site=site):
             act_on_item(item, automated_hash=automated_hash)
             session.remove_expired_responses()
-
 
     if args.input_file is None and args.item is None:
         parser.error("You must specify either an input file or an item.")
@@ -59,6 +71,7 @@ def main(argv=None):
                 act_on_item_string(line.strip())
     else:
         act_on_item_string(args.item.strip(), copy_from_item_string=args.copy_from)
+
 
 if __name__ == "__main__":
     main()

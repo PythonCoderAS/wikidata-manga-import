@@ -1,5 +1,6 @@
 import logging
 
+
 class CustomFormatter(logging.Formatter):
 
     grey = "\x1b[38;20m"
@@ -14,13 +15,14 @@ class CustomFormatter(logging.Formatter):
         logging.INFO: grey + format_str + reset,
         logging.WARNING: yellow + format_str + reset,
         logging.ERROR: red + format_str + reset,
-        logging.CRITICAL: bold_red + format_str + reset
+        logging.CRITICAL: bold_red + format_str + reset,
     }
 
     def format(self, record):
         log_fmt = self.FORMATS.get(record.levelno)
         super().__init__(log_fmt)
         return super().format(record)
+
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler()

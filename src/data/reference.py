@@ -2,6 +2,7 @@ import dataclasses
 import pywikibot
 import datetime
 
+
 @dataclasses.dataclass
 class Reference:
     stated_in: pywikibot.ItemPage

@@ -12,5 +12,5 @@ providers: dict[str, Provider] = {
     mal_id_prop: MALProvider(),
     anilist_id_prop: AnilistProvider(),
     md_id_prop: MangadexProvider(),
-    mu_id_prop: MangaUpdatesProvider()
+    mu_id_prop: MangaUpdatesProvider(),
 }

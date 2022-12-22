@@ -7,6 +7,7 @@ from ..constants import session as requests_session
 from ..pywikibot_stub_types import WikidataReference
 from ..data.results import Result
 
+
 class Provider(ABC):
     name: str
     session = requests_session
@@ -27,7 +28,9 @@ class Provider(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def compute_similar_reference(self, potential_ref: WikidataReference, id: str) -> bool:
+    def compute_similar_reference(
+        self, potential_ref: WikidataReference, id: str
+    ) -> bool:
         """Computes whether a given reference can be counted as .
 
         Args:
