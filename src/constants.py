@@ -6,6 +6,7 @@ from requests_cache import CachedSession
 
 site: pywikibot.DataSite = pywikibot.Site("wikidata", "wikidata")  # type: ignore
 
+# Constants for ids of properties that may be created
 genre_prop = "P136"
 demographic_prop = "P2360"
 start_prop = "P580"
@@ -17,6 +18,7 @@ title_prop = "P1476"
 romaji_title_prop = "P2125"
 described_at_url_prop = "P973"
 
+# Constants for ids of qualifiers
 retrieved_prop = "P813"
 stated_at_prop = "P248"
 url_prop = "P854"
@@ -24,14 +26,22 @@ archive_url_prop = "P1065"
 archive_date_prop = "P2960"
 deprecated_reason_prop = "P2241"
 
+# Constants for properties of sources that we pull from
 mal_id_prop = "P4087"
 anilist_id_prop = "P8731"
 md_id_prop = "P10589"
 mu_id_prop = "P11149"
 
+# Constants for external IDs of sources that we do not pull from
 niconico_prop = "P11176"
 bookwalker_prop = "P11259"
+inkr_prop = "P11315"
+anime_news_network_prop = "P1984"
+media_arts_prop = "P7886"
+bgm_prop = "P5732"
+animeclick_prop = "P5849"
 
+# Information for automatic mode
 automated_create_properties = [
     mal_id_prop,
     anilist_id_prop,
@@ -39,6 +49,11 @@ automated_create_properties = [
     mu_id_prop,
     niconico_prop,
     bookwalker_prop,
+    inkr_prop,
+    anime_news_network_prop,
+    media_arts_prop,
+    bgm_prop,
+    animeclick_prop,
     num_parts_prop,
     demographic_prop,
 ]
@@ -52,25 +67,37 @@ url_blacklist: list[str | re.Pattern] = [
     "pixiv.net",
 ]
 
+# Items for countries
 japan_item = pywikibot.ItemPage(site, "Q17")
 korea_item = pywikibot.ItemPage(site, "Q884")
 china_item = pywikibot.ItemPage(site, "Q148")
 
+# Items for languages
 japanese_lang_item = pywikibot.ItemPage(site, "Q5287")
 korean_lang_item = pywikibot.ItemPage(site, "Q9176")
 chinese_lang_item = pywikibot.ItemPage(site, "Q7850")
 english_lang_item = pywikibot.ItemPage(site, "Q1860")
 
+# Misc items
 volume_item = pywikibot.ItemPage(site, "Q1238720")
 link_rot_item = pywikibot.ItemPage(site, "Q1193907")
 
+# Items for sources we pull from
 mal_item = pywikibot.ItemPage(site, "Q4044680")
 anilist_item = pywikibot.ItemPage(site, "Q86470198")
 md_item = pywikibot.ItemPage(site, "Q110093307")
 mu_item = pywikibot.ItemPage(site, "Q114730827")
 
+# Regexes for matching external IDs
 niconico_regex = re.compile(r"seiga\.nicovideo\.jp/comic/(\d+)")
 bookwalker_regex = re.compile(r"(?:(?!:global).)*bookwalker\.jp/(?:series|book)/(\d+)")
+inkr_regex = re.compile(r"comics\.inkr\.com/title/(\d+)")
+anime_news_network_regex = re.compile(
+    r"animenewsnetwork\.com/encyclopedia/manga\.php\?id=(\d+)"
+)
+media_arts_regex = re.compile(r"mediaarts-db\.bunka.go\.jp/id/C(\d+)")
+bgm_regex = re.compile(r"bgm\.tv/subject/(\d+)")
+animeclick_regex = re.compile(r"animeclick\.it/manga/(\d+)")
 
 
 class Genres(enum.Enum):

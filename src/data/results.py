@@ -7,12 +7,22 @@ import pywikibot
 from ..constants import (
     Demographics,
     Genres,
+    anime_news_network_prop,
+    anime_news_network_regex,
+    animeclick_prop,
+    animeclick_regex,
+    bgm_prop,
+    bgm_regex,
     bookwalker_prop,
     bookwalker_regex,
     demographic_prop,
     described_at_url_prop,
     genre_prop,
+    inkr_prop,
+    inkr_regex,
     language_prop,
+    media_arts_prop,
+    media_arts_regex,
     niconico_prop,
     niconico_regex,
     num_parts_prop,
@@ -97,6 +107,39 @@ class Result:
                 bookwalker_claim.setTarget(bookwalker_id)
                 self.other_properties[bookwalker_prop].append(
                     ExtraProperty(bookwalker_claim)
+                )
+            elif match := inkr_regex.search(url):
+                inkr_id = match.group(1)
+                inkr_claim = pywikibot.Claim(site, inkr_prop)
+                inkr_claim.setTarget(inkr_id)
+                self.other_properties[inkr_prop].append(ExtraProperty(inkr_claim))
+            elif match := anime_news_network_regex.search(url):
+                anime_news_network_id = match.group(1)
+                anime_news_network_claim = pywikibot.Claim(
+                    site, anime_news_network_prop
+                )
+                anime_news_network_claim.setTarget(anime_news_network_id)
+                self.other_properties[anime_news_network_prop].append(
+                    ExtraProperty(anime_news_network_claim)
+                )
+            elif match := media_arts_regex.search(url):
+                media_arts_id = match.group(1)
+                media_arts_claim = pywikibot.Claim(site, media_arts_prop)
+                media_arts_claim.setTarget(f"C{media_arts_id}")
+                self.other_properties[media_arts_prop].append(
+                    ExtraProperty(media_arts_claim)
+                )
+            elif match := bgm_regex.search(url):
+                bgm_id = match.group(1)
+                bgm_claim = pywikibot.Claim(site, bgm_prop)
+                bgm_claim.setTarget(bgm_id)
+                self.other_properties[bgm_prop].append(ExtraProperty(bgm_claim))
+            elif match := animeclick_regex.search(url):
+                animeclick_id = match.group(1)
+                animeclick_claim = pywikibot.Claim(site, animeclick_prop)
+                animeclick_claim.setTarget(animeclick_id)
+                self.other_properties[animeclick_prop].append(
+                    ExtraProperty(animeclick_claim)
                 )
             else:
                 if any(
