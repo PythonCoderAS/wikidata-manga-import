@@ -4,29 +4,13 @@ from ..abc.provider import Provider
 from ..constants import (
     Demographics,
     Genres,
-    anilist_id_prop,
-    china_item,
-    chinese_lang_item,
-    country_prop,
-    hashtag_prop,
-    japan_item,
-    japanese_lang_item,
-    korea_item,
-    korean_lang_item,
-    language_prop,
-    mal_id_prop,
     mu_id_prop,
     mu_item,
-    romaji_title_prop,
-    site,
     stated_at_prop,
-    title_prop,
     url_prop,
 )
-from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
 from ..data.reference import Reference
 from ..data.results import Result
-from ..data.smart_precision_time import SmartPrecisionTime
 from ..pywikibot_stub_types import WikidataReference
 
 

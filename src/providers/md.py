@@ -29,7 +29,7 @@ from ..constants import (
     stated_at_prop,
     url_prop,
 )
-from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
+from ..data.extra_property import ExtraProperty, ExtraReference
 from ..data.link import Link
 from ..data.reference import Reference
 from ..data.results import Result

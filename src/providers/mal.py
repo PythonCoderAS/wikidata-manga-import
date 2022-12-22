@@ -9,10 +9,8 @@ from ..abc.provider import Provider
 from ..constants import (
     Demographics,
     Genres,
-    language_prop,
     mal_id_prop,
     mal_item,
-    site,
     stated_at_prop,
     url_prop,
 )
