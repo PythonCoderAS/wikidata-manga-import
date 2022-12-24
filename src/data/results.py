@@ -64,12 +64,12 @@ class Result:
                 self.genres.append(Genres.comedy_drama)
                 self.genres.remove(Genres.comedy)
                 self.genres.remove(Genres.drama)
-            for genre in self.genres:
+            for genre in set(self.genres):  # Dedupe
                 genre_claim = pywikibot.Claim(site, genre_prop)
                 genre_claim.setTarget(genre.value)
                 self.other_properties[genre_prop].append(ExtraProperty(genre_claim))
         if self.demographics:
-            for demographic in self.demographics:
+            for demographic in set(self.demographics):
                 demographic_claim = pywikibot.Claim(site, demographic_prop)
                 demographic_claim.setTarget(demographic.value)
                 self.other_properties[demographic_prop].append(

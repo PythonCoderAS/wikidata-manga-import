@@ -34,11 +34,11 @@ anilist_id_prop = "P8731"
 md_id_prop = "P10589"
 mu_id_prop = "P11149"
 anime_planet_prop = "P11348"
+inkr_prop = "P11315"
 
 # Constants for external IDs of sources that we do not pull from
 niconico_prop = "P11176"
 bookwalker_prop = "P11259"
-inkr_prop = "P11315"
 anime_news_network_prop = "P1984"
 media_arts_prop = "P7886"
 bgm_prop = "P5732"
@@ -48,7 +48,6 @@ animeclick_prop = "P5849"
 automated_create_properties = [
     niconico_prop,
     bookwalker_prop,
-    inkr_prop,
     anime_news_network_prop,
     media_arts_prop,
     bgm_prop,
@@ -62,6 +61,7 @@ automated_scan_properties = [
     md_id_prop,
     mu_id_prop,
     anime_planet_prop,
+    inkr_prop,
 ]
 automated_create_properties += automated_scan_properties
 url_properties = [described_at_url_prop]
@@ -95,6 +95,7 @@ anilist_item = pywikibot.ItemPage(site, "Q86470198")
 md_item = pywikibot.ItemPage(site, "Q110093307")
 mu_item = pywikibot.ItemPage(site, "Q114730827")
 anime_planet_item = pywikibot.ItemPage(site, "Q112180497")
+inkr_item = pywikibot.ItemPage(site, "Q115633593")
 
 # Regexes for matching external IDs
 niconico_regex = re.compile(r"seiga\.nicovideo\.jp/comic/(\d+)")
