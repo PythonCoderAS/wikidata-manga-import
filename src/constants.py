@@ -33,6 +33,7 @@ mal_id_prop = "P4087"
 anilist_id_prop = "P8731"
 md_id_prop = "P10589"
 mu_id_prop = "P11149"
+anime_planet_prop = "P11348"
 
 # Constants for external IDs of sources that we do not pull from
 niconico_prop = "P11176"
@@ -45,10 +46,6 @@ animeclick_prop = "P5849"
 
 # Information for automatic mode
 automated_create_properties = [
-    mal_id_prop,
-    anilist_id_prop,
-    md_id_prop,
-    mu_id_prop,
     niconico_prop,
     bookwalker_prop,
     inkr_prop,
@@ -59,7 +56,8 @@ automated_create_properties = [
     num_parts_prop,
     demographic_prop,
 ]
-automated_scan_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop]
+automated_scan_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop, anime_planet_prop]
+automated_create_properties += automated_scan_properties
 url_properties = [described_at_url_prop]
 url_blacklist: list[Union[str, re.Pattern]] = [
     "twitter.com",
@@ -83,12 +81,14 @@ english_lang_item = pywikibot.ItemPage(site, "Q1860")
 # Misc items
 volume_item = pywikibot.ItemPage(site, "Q1238720")
 link_rot_item = pywikibot.ItemPage(site, "Q1193907")
+redirect_item = pywikibot.ItemPage(site, "Q45403344")
 
 # Items for sources we pull from
 mal_item = pywikibot.ItemPage(site, "Q4044680")
 anilist_item = pywikibot.ItemPage(site, "Q86470198")
 md_item = pywikibot.ItemPage(site, "Q110093307")
 mu_item = pywikibot.ItemPage(site, "Q114730827")
+anime_planet_item = pywikibot.ItemPage(site, "Q112180497")
 
 # Regexes for matching external IDs
 niconico_regex = re.compile(r"seiga\.nicovideo\.jp/comic/(\d+)")
@@ -105,6 +105,7 @@ animeclick_regex = re.compile(r"animeclick\.it/manga/(\d+)")
 class Genres(enum.Enum):
     action = pywikibot.ItemPage(site, "Q15637293")
     adventure = pywikibot.ItemPage(site, "Q15712918")
+    autobiographical = pywikibot.ItemPage(site, "Q115264777")
     bara = pywikibot.ItemPage(site, "Q18655723")
     comedy = pywikibot.ItemPage(site, "Q15286013")
     comedy_drama = pywikibot.ItemPage(site, "Q15712927")
@@ -121,6 +122,7 @@ class Genres(enum.Enum):
     horror = pywikibot.ItemPage(site, "Q12767035")
     isekai = pywikibot.ItemPage(site, "Q53911753")
     iyashikei = pywikibot.ItemPage(site, "Q97358333")
+    lolicon = pywikibot.ItemPage(site, "Q309227")
     magical_girl = pywikibot.ItemPage(site, "Q752321")
     mahjong = pywikibot.ItemPage(site, "Q382236")
     mecha = pywikibot.ItemPage(site, "Q4292083")

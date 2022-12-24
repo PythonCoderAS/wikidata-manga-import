@@ -130,6 +130,9 @@ def act_on_property(
         automated_hash_text = ""
     for claim in claims:
         provider_id: str = claim.getTarget()  # type: ignore
+        if claim.getRank() == "deprecated":
+            # Deprecated, likely because it's an invalid ID. Do not check.
+            continue
         try:
             result: Result = provider.get(provider_id, item)
         except Exception as e:
@@ -285,7 +288,6 @@ def act_on_property(
                     if compatible:
                         continue
                     else:
-                        extra_reference.set_retrieved()
                         logger.info(
                             "Adding reference to [%s: %s]",
                             prop,
@@ -325,13 +327,13 @@ def act_on_item(item: pywikibot.ItemPage, automated_hash: str = ""):
                 except pywikibot.exceptions.APIError as e:
                     retries -= 1
                     if retries < 0:
-                        logger.error("Ran out of retries on APIError", exc_info=e)
+                        logger.error("Ran out of retries on APIError", exc_info=e,extra={"provider": None, "itemId": None})
                         raise
                     else:
                         logger.warning(
                             "APIError, retrying %s more times",
                             retries,
-                            extra={"provider": None, "itemId": None},
+                            extra={"provider": None, "itemId": None}
                         )
                         time.sleep(5)
                 else:

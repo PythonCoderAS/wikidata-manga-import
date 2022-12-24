@@ -40,28 +40,31 @@ def act_on_item_string(
 
 
 def main(argv=None):
+    automated_hash = ""
     args = parser.parse_args(argv)
     if args.automatic:
+        automated_hash = "{:x}".format(random.randrange(0, 2 ** 48))
         if args.input_file is not None or args.item is not None:
-            parser.error("Automatic mode cannot be used with input-file or item.")
+            pass
         elif args.copy_from is not None:
             parser.error("Automatic mode cannot be used with copy-from.")
-        # We need to reconfigure logging to write to a file.
-        logger = logging.getLogger("src")
-        os.makedirs("logs", exist_ok=True)
-        handler = logging.FileHandler("logs/automatic.log", mode="a")
-        handler.setFormatter(logging.Formatter(CustomFormatter.format_str))
-        handler.setLevel(logging.INFO)
-        logger.removeHandler(logger.handlers[0])
-        logger.addHandler(handler)
-        props_sparql = " UNION ".join(
-            ["{ ?item p:%s ?_. }" % property for property in automated_scan_properties]
-        )
-        complete_sparql = "SELECT DISTINCT ?item WHERE { %s }" % props_sparql
-        automated_hash = "{:x}".format(random.randrange(0, 2**48))
-        for item in WikidataSPARQLPageGenerator(complete_sparql, site=site):
-            act_on_item(item, automated_hash=automated_hash)
-            session.remove_expired_responses()
+        else:
+            # We need to reconfigure logging to write to a file.
+            logger = logging.getLogger("src")
+            os.makedirs("logs", exist_ok=True)
+            handler = logging.FileHandler("logs/automatic.log", mode="a")
+            handler.setFormatter(logging.Formatter(CustomFormatter.format_str))
+            handler.setLevel(logging.INFO)
+            logger.removeHandler(logger.handlers[0])
+            logger.addHandler(handler)
+            props_sparql = " UNION ".join(
+                ["{ ?item p:%s ?_. }" % property for property in automated_scan_properties]
+            )
+            complete_sparql = "SELECT DISTINCT ?item WHERE { %s }" % props_sparql
+            automated_hash = "{:x}".format(random.randrange(0, 2**48))
+            for item in WikidataSPARQLPageGenerator(complete_sparql, site=site):
+                act_on_item(item, automated_hash=automated_hash)
+                session.remove_expired_responses()
 
     if args.input_file is None and args.item is None:
         parser.error("You must specify either an input file or an item.")
@@ -72,9 +75,9 @@ def main(argv=None):
             parser.error("You cannot specify both an input file and a copy-from item.")
         with open(args.input_file, "r") as f:
             for line in f:
-                act_on_item_string(line.strip())
+                act_on_item_string(line.strip(), automated_hash=automated_hash)
     else:
-        act_on_item_string(args.item.strip(), copy_from_item_string=args.copy_from)
+        act_on_item_string(args.item.strip(), copy_from_item_string=args.copy_from, automated_hash=automated_hash)
 
 
 if __name__ == "__main__":

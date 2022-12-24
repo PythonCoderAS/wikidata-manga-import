@@ -8,6 +8,7 @@ pywikibot = "*"
 mwparserfromhell = ">=0.5.0"
 requests = "*"
 requests-cache = "*"
+beautifulsoup4 = "*"
 
 [dev-packages]
 black = "*"
