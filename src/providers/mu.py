@@ -18,6 +18,7 @@ from ..pywikibot_stub_types import WikidataReference
 
 class MangaUpdatesProvider(Provider):
     name = "MangaUpdates"
+    prop = mu_id_prop
 
     mu_base = "https://api.mangaupdates.com/v1"
 

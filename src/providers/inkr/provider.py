@@ -12,6 +12,7 @@ from .parser import base_url, get_data
 
 class INKRProvider(Provider):
     name = "INKR"
+    prop = inkr_prop
 
     genre_mapping = {
         1: Genres.supernatural,

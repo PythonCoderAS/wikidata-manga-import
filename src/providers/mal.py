@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 class MALProvider(Provider):
     name: str = "MyAnimeList"
+    prop = mal_id_prop
 
     jikan_base = "https://api.jikan.moe/v4"
 

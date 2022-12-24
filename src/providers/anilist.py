@@ -31,6 +31,7 @@ from ..pywikibot_stub_types import WikidataReference
 
 class AnilistProvider(Provider):
     name = "AniList"
+    prop = anilist_id_prop
 
     anilist_base = "https://graphql.anilist.co"
 

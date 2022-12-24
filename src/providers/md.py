@@ -44,6 +44,7 @@ from .anime_planet.parser import base_url
 
 class MangadexProvider(Provider):
     name = "MangaDex"
+    prop = md_id_prop
 
     md_base = "https://api.mangadex.org"
 

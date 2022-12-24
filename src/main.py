@@ -39,17 +39,13 @@ def add_or_update_references(
     claim: pywikibot.Claim,
     new_reference: Reference,
     automated_hash: str = "",
-) -> bool:
+) -> tuple[WikidataReference, list[pywikibot.Claim]]:
     if automated_hash:
         automated_hash_text = (
             f" ([[:toolforge:editgroups/b/CB/{automated_hash}|details]])"
         )
     else:
         automated_hash_text = ""
-    for source in claim.getSources():
-        source: WikidataReference
-        if provider.compute_similar_reference(source, id):
-            return False
     retrieved_ref = pywikibot.Claim(site, retrieved_prop, is_reference=True)
     retrieved_ref.setTarget(
         SmartPrecisionTime(
@@ -62,6 +58,12 @@ def add_or_update_references(
     stated_in_ref.setTarget(new_reference.stated_in)
     url_ref = pywikibot.Claim(site, url_prop, is_reference=True)
     url_ref.setTarget(new_reference.url)
+    id_ref = pywikibot.Claim(site, provider.prop, is_reference=True)
+    id_ref.setTarget(id)
+    for source in claim.getSources():
+        source: WikidataReference
+        if provider.compute_similar_reference(source, id):
+            return source, [retrieved_ref, stated_in_ref, url_ref, id_ref]
     logger_extra = {"provider": provider.name, "itemId": None}
     logger.info(
         "Adding reference to claim %s: %s",
@@ -74,7 +76,7 @@ def add_or_update_references(
         summary=f"Adding reference for data imported from {provider.name}.{automated_hash_text}",
         bot=True,
     )
-    return True
+    return {}, [retrieved_ref, stated_in_ref, url_ref, id_ref]
 
 
 def enum_item_in_item_list(
@@ -121,6 +123,10 @@ def act_on_property(
 ) -> ProviderResults:
     # claims is the claims containing provider IDs.
     ret_results = ProviderResults()
+    # Contains a tuple of [existing_properties, new_properties]. Existing properties
+    # are a dictionary of property ID to list of claims. New properties are just a
+    # list of claims since we guarantee one claim per property ID.
+    to_merge: list[tuple[WikidataReference, list[pywikibot.Claim]]] = []
     logger_extra = {"provider": provider.name, "itemId": item.getID()}
     if automated_hash:
         automated_hash_text = (
@@ -284,6 +290,13 @@ def act_on_property(
                     for existing_reference in new_claim.getSources():
                         if extra_reference.is_compatible_reference(existing_reference):
                             compatible = True
+                            # Set up merging
+                            to_merge.append(
+                                (
+                                    existing_reference,
+                                    list(extra_reference.new_reference_props.values()),
+                                )
+                            )
                             break
                     if compatible:
                         continue
@@ -299,13 +312,30 @@ def act_on_property(
                             summary=f"Adding reference to claim with property {prop} from {provider.name}.{automated_hash_text}",
                             bot=True,
                         )
-                add_or_update_references(
+                existing_ref, refs = add_or_update_references(
                     provider,
                     provider_id,
                     new_claim,
                     reference,
                     automated_hash=automated_hash,
                 )
+                if existing_ref:
+                    to_merge.append((existing_ref, refs))
+    if to_merge:
+        # Time to merge.
+        merge_found = False
+        for existing_ref, refs in to_merge:
+            for ref in refs:
+                if ref.id not in existing_ref:
+                    existing_ref[ref.id] = [ref]
+                    merge_found = True
+        if merge_found:
+            logger.info("Merging references", extra=logger_extra)
+            item.editEntity(
+                {"claims": item.claims.toJSON()},
+                summary=f"Merging references from {provider.name}.{automated_hash_text}",
+                bot=True,
+            )
     return ret_results
 
 

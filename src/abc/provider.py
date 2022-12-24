@@ -10,6 +10,7 @@ from ..pywikibot_stub_types import WikidataReference
 
 class Provider(ABC):
     name: str
+    prop: str
     session = requests_session
 
     @abstractmethod

@@ -19,6 +19,7 @@ from .parser import base_url, get_data
 
 class AnimePlanetProvider(Provider):
     name = "Anime-Planet"
+    prop = anime_planet_prop
 
     genre_mapping = {
         "action": Genres.action,
