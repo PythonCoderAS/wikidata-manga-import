@@ -1,20 +1,21 @@
 import re
 
 import pywikibot
-from .parser import get_data, base_url
 
 from ...abc.provider import Provider
 from ...constants import (
     Demographics,
     Genres,
-    anime_planet_prop,
     anime_planet_item,
+    anime_planet_prop,
     stated_at_prop,
     url_prop,
 )
 from ...data.reference import Reference
 from ...data.results import Result
 from ...pywikibot_stub_types import WikidataReference
+from .parser import base_url, get_data
+
 
 class AnimePlanetProvider(Provider):
     name = "Anime-Planet"
@@ -61,7 +62,7 @@ class AnimePlanetProvider(Provider):
         "shoujo": Demographics.shojo,
         "shoujo-ai": Genres.yuri,
         "seinen": Demographics.seinen,
-        "josei": Demographics.josei
+        "josei": Demographics.josei,
     }
 
     def get(self, id: str, _) -> Result:
@@ -101,6 +102,4 @@ class AnimePlanetProvider(Provider):
         return False
 
     def get_reference(self, id: str) -> Reference:
-        return Reference(
-            stated_in=anime_planet_item, url=f"{base_url}/{id}"
-        )
+        return Reference(stated_in=anime_planet_item, url=f"{base_url}/{id}")

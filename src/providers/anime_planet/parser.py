@@ -3,8 +3,8 @@ from typing import List
 
 from bs4 import BeautifulSoup, Tag
 
-from . import ParserResult
 from ...constants import session
+from . import ParserResult
 
 base_url = "https://www.anime-planet.com/manga"
 magazine_url_regex = re.compile(r"/manga/magazines/([a-z-]+)", re.IGNORECASE)
@@ -18,7 +18,11 @@ def get_data(manga_id: str) -> ParserResult:
     result = ParserResult()
     section = soup.find(attrs={"id": "siteContainer"}).find("section")
     divs: List[Tag] = section.find_all("div", recursive=False)
-    vol_and_chap_info, magazine_info, year_info, = divs[0], divs[1], divs[2]
+    vol_and_chap_info, magazine_info, year_info, = (
+        divs[0],
+        divs[1],
+        divs[2],
+    )
 
     # Volumes and chapters
     vol_and_chap_string = vol_and_chap_info.text.strip()

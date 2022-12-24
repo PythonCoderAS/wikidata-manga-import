@@ -56,7 +56,13 @@ automated_create_properties = [
     num_parts_prop,
     demographic_prop,
 ]
-automated_scan_properties = [mal_id_prop, anilist_id_prop, md_id_prop, mu_id_prop, anime_planet_prop]
+automated_scan_properties = [
+    mal_id_prop,
+    anilist_id_prop,
+    md_id_prop,
+    mu_id_prop,
+    anime_planet_prop,
+]
 automated_create_properties += automated_scan_properties
 url_properties = [described_at_url_prop]
 url_blacklist: list[Union[str, re.Pattern]] = [

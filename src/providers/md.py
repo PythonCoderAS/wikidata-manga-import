@@ -10,10 +10,13 @@ from ..constants import (
     Demographics,
     Genres,
     anilist_id_prop,
+    anime_planet_item,
+    anime_planet_prop,
     bookwalker_prop,
     china_item,
     chinese_lang_item,
     country_prop,
+    deprecated_reason_prop,
     english_lang_item,
     japan_item,
     japanese_lang_item,
@@ -25,13 +28,10 @@ from ..constants import (
     md_item,
     mu_id_prop,
     mu_item,
+    redirect_item,
     retrieved_prop,
     site,
     stated_at_prop,
-anime_planet_prop,
-anime_planet_item,
-redirect_item,
-deprecated_reason_prop,
     url_prop,
 )
 from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
@@ -79,7 +79,7 @@ class MangadexProvider(Provider):
         "e5301a23-ebd9-49dd-a0cb-2add944c7fe9": Genres.slice_of_life,
         "eabc5b4c-6aff-42f3-b657-3e90cbd00b75": Genres.supernatural,
         "ee968100-4191-4968-93d3-f82d72be7e46": Genres.mystery,
-        "2d1f5d56-a1e5-4d0d-a961-2193588b08ec": Genres.lolicon
+        "2d1f5d56-a1e5-4d0d-a961-2193588b08ec": Genres.lolicon,
     }
 
     demographic_map = {
@@ -96,9 +96,7 @@ class MangadexProvider(Provider):
         "zh-hk": (china_item, chinese_lang_item),
     }
 
-    mu_new_url_regex = re.compile(
-        r"https://www\.mangaupdates\.com/series/([0-9a-z]+)"
-    )
+    mu_new_url_regex = re.compile(r"https://www\.mangaupdates\.com/series/([0-9a-z]+)")
     mu_check_claim = pywikibot.Claim(site, stated_at_prop)
     mu_check_claim.setTarget(mu_item)
     ap_new_url_regex = re.compile(rf"{base_url}/([a-z-]+)", re.IGNORECASE)
@@ -181,24 +179,26 @@ class MangadexProvider(Provider):
                     new_id = self.ap_new_url_regex.search(r.url).group(1)
                     claim.setTarget(new_id)
                     for i, item in enumerate(r.history):
-                        for extra_property in result.other_properties[anime_planet_prop][:i + 1]:
-                            extra_ref = ExtraReference(url_match_pattern=self.ap_new_url_regex)
+                        for extra_property in result.other_properties[
+                            anime_planet_prop
+                        ][: i + 1]:
+                            extra_ref = ExtraReference(
+                                url_match_pattern=self.ap_new_url_regex
+                            )
                             extra_ref.match_property_values[
                                 stated_at_prop
                             ] = extra_ref.new_reference_props[
                                 stated_at_prop
                             ] = self.ap_check_claim
                             url_ref_claim = pywikibot.Claim(site, url_prop)
-                            url_ref_claim.setTarget(
-                                item.url
-                            )
+                            url_ref_claim.setTarget(item.url)
                             extra_ref.new_reference_props[url_prop] = url_ref_claim
-                            now = pywikibot.Timestamp.now(
-                                tz=datetime.timezone.utc
-                            )
+                            now = pywikibot.Timestamp.now(tz=datetime.timezone.utc)
                             retrieved_claim = pywikibot.Claim(site, retrieved_prop)
                             retrieved_claim.setTarget(
-                                pywikibot.WbTime(year=now.year, month=now.month, day=now.day)
+                                pywikibot.WbTime(
+                                    year=now.year, month=now.month, day=now.day
+                                )
                             )
                             extra_ref.new_reference_props[
                                 retrieved_prop
@@ -209,10 +209,16 @@ class MangadexProvider(Provider):
                             redirect_claim.setTarget(match.group(1))
                             redirect_claim.setRank("deprecated")
                             redirect_extra_prop = ExtraProperty(claim=redirect_claim)
-                            deprecated_claim = pywikibot.Claim(site, deprecated_reason_prop)
+                            deprecated_claim = pywikibot.Claim(
+                                site, deprecated_reason_prop
+                            )
                             deprecated_claim.setTarget(redirect_item)
-                            redirect_extra_prop.qualifiers[deprecated_reason_prop].append(ExtraQualifier(claim=deprecated_claim))
-                            result.other_properties[anime_planet_prop].append(redirect_extra_prop)
+                            redirect_extra_prop.qualifiers[
+                                deprecated_reason_prop
+                            ].append(ExtraQualifier(claim=deprecated_claim))
+                            result.other_properties[anime_planet_prop].append(
+                                redirect_extra_prop
+                            )
                 except (requests.HTTPError, UnicodeDecodeError):
                     claim.setTarget(ap_id)
             mu_id: Union[str, None] = data["links"].get("mu", None)
@@ -246,11 +252,11 @@ class MangadexProvider(Provider):
                                 )
                                 extra_ref.new_reference_props[url_prop] = url_ref_claim
                                 retrieved_claim = pywikibot.Claim(site, retrieved_prop)
-                                now = pywikibot.Timestamp.now(
-                                            tz=datetime.timezone.utc
-                                        )
+                                now = pywikibot.Timestamp.now(tz=datetime.timezone.utc)
                                 retrieved_claim.setTarget(
-                                    pywikibot.WbTime(year=now.year, month=now.month, day=now.day)
+                                    pywikibot.WbTime(
+                                        year=now.year, month=now.month, day=now.day
+                                    )
                                 )
                                 extra_ref.new_reference_props[
                                     retrieved_prop

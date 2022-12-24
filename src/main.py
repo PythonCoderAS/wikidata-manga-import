@@ -327,13 +327,17 @@ def act_on_item(item: pywikibot.ItemPage, automated_hash: str = ""):
                 except pywikibot.exceptions.APIError as e:
                     retries -= 1
                     if retries < 0:
-                        logger.error("Ran out of retries on APIError", exc_info=e,extra={"provider": None, "itemId": None})
+                        logger.error(
+                            "Ran out of retries on APIError",
+                            exc_info=e,
+                            extra={"provider": None, "itemId": None},
+                        )
                         raise
                     else:
                         logger.warning(
                             "APIError, retrying %s more times",
                             retries,
-                            extra={"provider": None, "itemId": None}
+                            extra={"provider": None, "itemId": None},
                         )
                         time.sleep(5)
                 else:

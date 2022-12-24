@@ -43,7 +43,7 @@ def main(argv=None):
     automated_hash = ""
     args = parser.parse_args(argv)
     if args.automatic:
-        automated_hash = "{:x}".format(random.randrange(0, 2 ** 48))
+        automated_hash = "{:x}".format(random.randrange(0, 2**48))
         if args.input_file is not None or args.item is not None:
             pass
         elif args.copy_from is not None:
@@ -58,7 +58,10 @@ def main(argv=None):
             logger.removeHandler(logger.handlers[0])
             logger.addHandler(handler)
             props_sparql = " UNION ".join(
-                ["{ ?item p:%s ?_. }" % property for property in automated_scan_properties]
+                [
+                    "{ ?item p:%s ?_. }" % property
+                    for property in automated_scan_properties
+                ]
             )
             complete_sparql = "SELECT DISTINCT ?item WHERE { %s }" % props_sparql
             automated_hash = "{:x}".format(random.randrange(0, 2**48))
@@ -77,7 +80,11 @@ def main(argv=None):
             for line in f:
                 act_on_item_string(line.strip(), automated_hash=automated_hash)
     else:
-        act_on_item_string(args.item.strip(), copy_from_item_string=args.copy_from, automated_hash=automated_hash)
+        act_on_item_string(
+            args.item.strip(),
+            copy_from_item_string=args.copy_from,
+            automated_hash=automated_hash,
+        )
 
 
 if __name__ == "__main__":
