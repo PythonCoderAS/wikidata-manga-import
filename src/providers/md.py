@@ -97,11 +97,7 @@ class MangadexProvider(Provider):
     }
 
     mu_new_url_regex = re.compile(r"https://www\.mangaupdates\.com/series/([0-9a-z]+)")
-    mu_check_claim = pywikibot.Claim(site, stated_at_prop)
-    mu_check_claim.setTarget(mu_item)
     ap_new_url_regex = re.compile(rf"{base_url}/([a-z-]+)", re.IGNORECASE)
-    ap_check_claim = pywikibot.Claim(site, stated_at_prop)
-    ap_check_claim.setTarget(anime_planet_item)
     bw_regex_md = re.compile(r"series/(\d+)")
 
     def get(self, id: str, _) -> Result:
@@ -185,24 +181,16 @@ class MangadexProvider(Provider):
                             extra_ref = ExtraReference(
                                 url_match_pattern=self.ap_new_url_regex
                             )
+                            ap_check_claim = pywikibot.Claim(site, stated_at_prop)
+                            ap_check_claim.setTarget(anime_planet_item)
                             extra_ref.match_property_values[
                                 stated_at_prop
                             ] = extra_ref.new_reference_props[
                                 stated_at_prop
-                            ] = self.ap_check_claim
+                            ] = ap_check_claim
                             url_ref_claim = pywikibot.Claim(site, url_prop)
                             url_ref_claim.setTarget(item.url)
                             extra_ref.new_reference_props[url_prop] = url_ref_claim
-                            now = pywikibot.Timestamp.now(tz=datetime.timezone.utc)
-                            retrieved_claim = pywikibot.Claim(site, retrieved_prop)
-                            retrieved_claim.setTarget(
-                                pywikibot.WbTime(
-                                    year=now.year, month=now.month, day=now.day
-                                )
-                            )
-                            extra_ref.new_reference_props[
-                                retrieved_prop
-                            ] = retrieved_claim
                             extra_property.extra_references.append(extra_ref)
                         if match := self.ap_new_url_regex.search(item.url):
                             redirect_claim = pywikibot.Claim(site, anime_planet_prop)
@@ -241,26 +229,18 @@ class MangadexProvider(Provider):
                                         r"https://www.mangaupdates.com/series.html\?id=[0-9]+"
                                     )
                                 )
+                                mu_check_claim = pywikibot.Claim(site, stated_at_prop)
+                                mu_check_claim.setTarget(mu_item)
                                 extra_ref.match_property_values[
                                     stated_at_prop
                                 ] = extra_ref.new_reference_props[
                                     stated_at_prop
-                                ] = self.mu_check_claim
+                                ] = mu_check_claim
                                 url_ref_claim = pywikibot.Claim(site, url_prop)
                                 url_ref_claim.setTarget(
                                     f"https://www.mangaupdates.com/series.html?id={mu_id}"
                                 )
                                 extra_ref.new_reference_props[url_prop] = url_ref_claim
-                                retrieved_claim = pywikibot.Claim(site, retrieved_prop)
-                                now = pywikibot.Timestamp.now(tz=datetime.timezone.utc)
-                                retrieved_claim.setTarget(
-                                    pywikibot.WbTime(
-                                        year=now.year, month=now.month, day=now.day
-                                    )
-                                )
-                                extra_ref.new_reference_props[
-                                    retrieved_prop
-                                ] = retrieved_claim
                                 extra_prop.extra_references.append(extra_ref)
                                 result.other_properties[mu_id_prop].append(extra_prop)
                     except (requests.HTTPError, UnicodeDecodeError):

@@ -2,7 +2,7 @@ import dataclasses
 import datetime
 from collections import defaultdict
 from re import Pattern
-from typing import Union
+from typing import Literal, Union
 
 import pywikibot
 
@@ -27,6 +27,16 @@ class ExtraReference:
     new_reference_props: dict[str, pywikibot.Claim] = dataclasses.field(
         default_factory=dict
     )
+    retrieved: dataclasses.InitVar[Union[pywikibot.WbTime, Literal[False], None]] = None
+
+    def __post_init__(self, retrieved: Union[pywikibot.WbTime, Literal[False], None]):
+        if retrieved is None:
+            now = pywikibot.Timestamp.now(tz=datetime.timezone.utc)
+            retrieved = pywikibot.WbTime(year=now.year, month=now.month, day=now.day)
+        if retrieved:
+            retrieved_claim = pywikibot.Claim(site, retrieved_prop)
+            retrieved_claim.setTarget(retrieved)
+            self.new_reference_props[retrieved_prop] = retrieved_claim
 
     def is_compatible_reference(self, reference: WikidataReference) -> bool:
         if self.url_match_pattern and url_prop in reference:
