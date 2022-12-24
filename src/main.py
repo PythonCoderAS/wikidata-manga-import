@@ -72,7 +72,7 @@ def add_or_update_references(
         extra=logger_extra,
     )
     claim.addSources(
-        [retrieved_ref, stated_in_ref, url_ref],
+        [retrieved_ref, stated_in_ref, url_ref, id_ref],
         summary=f"Adding reference for data imported from {provider.name}.{automated_hash_text}",
         bot=True,
     )
