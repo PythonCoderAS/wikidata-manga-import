@@ -294,9 +294,6 @@ def act_on_property(
                             new_claim.getTarget(),
                             extra=logger_extra,
                         )
-                        print(
-                            f"{provider.name}: Adding refs to {prop}: {[id(item) for item in extra_reference.new_reference_props.values()]}"
-                        )
                         new_claim.addSources(
                             list(extra_reference.new_reference_props.values()),
                             summary=f"Adding reference to claim with property {prop} from {provider.name}.{automated_hash_text}",
