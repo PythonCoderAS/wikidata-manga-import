@@ -128,6 +128,9 @@ def act_on_property(
     # list of claims since we guarantee one claim per property ID.
     to_merge: list[tuple[WikidataReference, list[pywikibot.Claim]]] = []
     logger_extra = {"provider": provider.name, "itemId": item.getID()}
+    allowed_automatic_properties = automated_create_properties[
+        "*"
+    ] | automated_create_properties.get(provider.prop, set())
     if automated_hash:
         automated_hash_text = (
             f" ([[:toolforge:editgroups/b/CB/{automated_hash}|details]])"
@@ -153,7 +156,7 @@ def act_on_property(
                 new_claim = extra_prop_data.claim
                 if prop not in item.claims:
                     if extra_prop_data.reference_only or (
-                        automated_hash and prop not in automated_create_properties
+                        automated_hash and prop not in allowed_automatic_properties
                     ):
                         continue
                     logger.info(
@@ -197,7 +200,7 @@ def act_on_property(
                             else:
                                 if extra_prop_data.reference_only or (
                                     automated_hash
-                                    and prop not in automated_create_properties
+                                    and prop not in allowed_automatic_properties
                                 ):
                                     continue
                                 logger.info(
@@ -217,7 +220,7 @@ def act_on_property(
                         try:
                             if extra_prop_data.reference_only or (
                                 automated_hash
-                                and prop not in automated_create_properties
+                                and prop not in allowed_automatic_properties
                             ):
                                 continue
                             logger.info(

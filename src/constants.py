@@ -45,25 +45,28 @@ bgm_prop = "P5732"
 animeclick_prop = "P5849"
 
 # Information for automatic mode
-automated_create_properties = [
-    niconico_prop,
-    bookwalker_prop,
-    anime_news_network_prop,
-    media_arts_prop,
-    bgm_prop,
-    animeclick_prop,
-    num_parts_prop,
-    demographic_prop,
-]
-automated_scan_properties = [
+automated_create_properties: dict[str, set[str]] = {
+    "*": {
+        niconico_prop,
+        bookwalker_prop,
+        anime_news_network_prop,
+        media_arts_prop,
+        bgm_prop,
+        animeclick_prop,
+        num_parts_prop,
+        demographic_prop,
+    },
+    inkr_prop: {genre_prop},
+}
+automated_scan_properties = {
     mal_id_prop,
     anilist_id_prop,
     md_id_prop,
     mu_id_prop,
     anime_planet_prop,
     inkr_prop,
-]
-automated_create_properties += automated_scan_properties
+}
+automated_create_properties["*"] |= automated_scan_properties
 url_properties = [described_at_url_prop]
 url_blacklist: list[Union[str, re.Pattern]] = [
     "twitter.com",
