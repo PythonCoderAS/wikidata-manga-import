@@ -88,6 +88,8 @@ def main(argv=None):
                 mark_completed(item.id)
             else:
                 reset_db()
+                with open("done.txt", "w") as f:
+                    f.write("Done.")
             return
 
     if args.input_file is None and args.item is None:
