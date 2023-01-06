@@ -135,4 +135,4 @@ user-config.py
 user-password.py
 
 logs/
-*.log
+database.sqlite

@@ -14,6 +14,7 @@ from ..constants import (
     animeclick_regex,
     bgm_prop,
     bgm_regex,
+    bookwalker_global_prop,
     bookwalker_prop,
     bookwalker_regex,
     demographic_prop,
@@ -113,13 +114,16 @@ class Result:
                 self.other_properties[niconico_prop].append(
                     ExtraProperty(niconico_claim)
                 )
-            elif match := "global.bookwalker.jp" not in url and bookwalker_regex.search(
-                url
-            ):
+            elif match := bookwalker_regex.search(url):
+                prop_to_use = (
+                    bookwalker_global_prop
+                    if "global.bookwalker" in url
+                    else bookwalker_prop
+                )
                 bookwalker_id = match.group(1)
-                bookwalker_claim = pywikibot.Claim(site, bookwalker_prop)
+                bookwalker_claim = pywikibot.Claim(site, prop_to_use)
                 bookwalker_claim.setTarget(bookwalker_id)
-                self.other_properties[bookwalker_prop].append(
+                self.other_properties[prop_to_use].append(
                     ExtraProperty(bookwalker_claim)
                 )
             elif match := inkr_regex.search(url):

@@ -39,6 +39,7 @@ inkr_prop = "P11315"
 # Constants for external IDs of sources that we do not pull from
 niconico_prop = "P11176"
 bookwalker_prop = "P11259"
+bookwalker_global_prop = "P11363"
 anime_news_network_prop = "P1984"
 media_arts_prop = "P7886"
 bgm_prop = "P5732"
@@ -102,7 +103,7 @@ inkr_item = pywikibot.ItemPage(site, "Q115633593")
 
 # Regexes for matching external IDs
 niconico_regex = re.compile(r"seiga\.nicovideo\.jp/comic/(\d+)")
-bookwalker_regex = re.compile(r"(?:(?!:global).)*bookwalker\.jp/(?:series|book)/(\d+)")
+bookwalker_regex = re.compile(r"(?:global\.)?bookwalker\.jp/(?:series|book)/(\d+)")
 inkr_regex = re.compile(r"comics\.inkr\.com/title/(\d+)")
 anime_news_network_regex = re.compile(
     r"animenewsnetwork\.com/encyclopedia/manga\.php\?id=(\d+)"

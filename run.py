@@ -57,17 +57,38 @@ def main(argv=None):
             handler.setLevel(logging.INFO)
             logger.removeHandler(logger.handlers[0])
             logger.addHandler(handler)
-            props_sparql = " UNION ".join(
-                [
-                    "{ ?item p:%s ?_. }" % property
-                    for property in automated_scan_properties
-                ]
+            from automatic_ids import (
+                add_ids,
+                get_ids,
+                init_db,
+                mark_completed,
+                reset_db,
             )
-            complete_sparql = "SELECT DISTINCT ?item WHERE { %s }" % props_sparql
-            automated_hash = "{:x}".format(random.randrange(0, 2**48))
-            for item in WikidataSPARQLPageGenerator(complete_sparql, site=site):
+
+            init_db()
+            ids = get_ids()
+            if not ids:
+                props_sparql = " UNION ".join(
+                    [
+                        "{ ?item p:%s ?_. }" % property
+                        for property in automated_scan_properties
+                    ]
+                )
+                complete_sparql = "SELECT DISTINCT ?item WHERE { %s }" % props_sparql
+                items = [
+                    item
+                    for item in WikidataSPARQLPageGenerator(complete_sparql, site=site)
+                ]
+                add_ids(item.id for item in items)
+            else:
+                items = [pywikibot.ItemPage(site, f"Q{id}") for id in ids]
+            for item in items:
                 act_on_item(item, automated_hash=automated_hash)
                 session.remove_expired_responses()
+                mark_completed(item.id)
+            else:
+                reset_db()
+            return
 
     if args.input_file is None and args.item is None:
         parser.error("You must specify either an input file or an item.")
