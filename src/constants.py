@@ -44,6 +44,7 @@ anime_news_network_prop = "P1984"
 media_arts_prop = "P7886"
 bgm_prop = "P5732"
 animeclick_prop = "P5849"
+ebookjapan_prop = "P11476"
 
 # Information for automatic mode
 automated_create_properties: dict[str, set[str]] = {
@@ -56,6 +57,7 @@ automated_create_properties: dict[str, set[str]] = {
         animeclick_prop,
         num_parts_prop,
         demographic_prop,
+        ebookjapan_prop,
     },
     inkr_prop: {genre_prop},
 }
@@ -111,6 +113,7 @@ anime_news_network_regex = re.compile(
 media_arts_regex = re.compile(r"mediaarts-db\.bunka.go\.jp/id/C(\d+)")
 bgm_regex = re.compile(r"bgm\.tv/subject/(\d+)")
 animeclick_regex = re.compile(r"animeclick\.it/manga/(\d+)")
+ebookjapan_regex = re.compile(r"ebookjapan\.yahoo\.co\.jp/books/(\d+)")
 
 
 class Genres(enum.Enum):

@@ -17,6 +17,8 @@ from ..constants import (
     chinese_lang_item,
     country_prop,
     deprecated_reason_prop,
+    ebookjapan_prop,
+    ebookjapan_regex,
     english_lang_item,
     japan_item,
     japanese_lang_item,
@@ -29,7 +31,6 @@ from ..constants import (
     mu_id_prop,
     mu_item,
     redirect_item,
-    retrieved_prop,
     site,
     stated_at_prop,
     url_prop,
@@ -163,6 +164,13 @@ class MangadexProvider(Provider):
                 claim = pywikibot.Claim(site, bookwalker_prop)
                 claim.setTarget(match.group(1))
                 result.other_properties[bookwalker_prop].append(
+                    ExtraProperty(claim=claim)
+                )
+            ebj_url = data["links"].get("ebj", "")
+            if match := ebookjapan_regex.search(ebj_url):
+                claim = pywikibot.Claim(site, ebookjapan_prop)
+                claim.setTarget(match.group(1))
+                result.other_properties[ebookjapan_prop].append(
                     ExtraProperty(claim=claim)
                 )
             ap_id = data["links"].get("ap", None)

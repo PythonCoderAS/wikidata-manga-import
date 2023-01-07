@@ -19,6 +19,8 @@ from ..constants import (
     bookwalker_regex,
     demographic_prop,
     described_at_url_prop,
+    ebookjapan_prop,
+    ebookjapan_regex,
     end_prop,
     genre_prop,
     inkr_prop,
@@ -158,6 +160,13 @@ class Result:
                 animeclick_claim.setTarget(animeclick_id)
                 self.other_properties[animeclick_prop].append(
                     ExtraProperty(animeclick_claim)
+                )
+            elif match := ebookjapan_regex.search(url):
+                ebookjapan_id = match.group(1)
+                ebookjapan_claim = pywikibot.Claim(site, ebookjapan_prop)
+                ebookjapan_claim.setTarget(ebookjapan_id)
+                self.other_properties[ebookjapan_prop].append(
+                    ExtraProperty(ebookjapan_claim)
                 )
             else:
                 if any(
