@@ -209,11 +209,11 @@
         },
         "pywikibot": {
             "hashes": [
-                "sha256:071b8883c2396c061f210b2369dc1e8cfe2a5dad14fb10a20639df30d729fb5c",
-                "sha256:0787458bcb2f86bf21f7e900b4148a61316540dca31b0fa0b04250d8197a0344"
+                "sha256:6740a43d0a53690e26b4df4f6e697d2bf8b95170c954013c41253cb8d0f63c4b",
+                "sha256:6be51d542321c28bda5cdda1157482a4c615182e5251b5ab0b67299e417d49c0"
             ],
             "index": "pypi",
-            "version": "==7.7.3"
+            "version": "==8.0.0"
         },
         "requests": {
             "hashes": [
@@ -233,11 +233,11 @@
         },
         "setuptools": {
             "hashes": [
-                "sha256:4d3c92fac8f1118bb77a22181355e29c239cabfe2b9effdaa665c66b711136d7",
-                "sha256:8ab4f1dbf2b4a65f7eec5ad0c620e84c34111a68d3349833494b9088212214dd"
+                "sha256:6f590d76b713d5de4e49fe4fbca24474469f53c83632d5d0fd056f7ff7e8112b",
+                "sha256:ac4008d396bc9cd983ea483cb7139c0240a07bbc74ffb6232fceffedc6cf03a8"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==65.7.0"
+            "version": "==66.1.1"
         },
         "six": {
             "hashes": [
