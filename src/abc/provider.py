@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-import pywikibot
+from wikidata_bot_framework import EntityPage, Output
 
 from ..constants import session as requests_session
 from ..data.reference import Reference
@@ -14,14 +14,14 @@ class Provider(ABC):
     session = requests_session
 
     @abstractmethod
-    def get(self, id: str, item: pywikibot.ItemPage) -> Result:
+    def get(self, id: str, item: EntityPage) -> Result:
         """Gets the list of results for a given provider ID.
 
         Note: May be expanded to return more than just those
 
         Args:
             id (str): The provider ID.
-            item (pywikibot.ItemPage): The existing Wikidata item.
+            item (EntityPage): The existing Wikidata item.
 
         Returns:
             Result: The results to given.
@@ -32,7 +32,7 @@ class Provider(ABC):
     def compute_similar_reference(
         self, potential_ref: WikidataReference, id: str
     ) -> bool:
-        """Computes whether a given reference can be counted as .
+        """Computes whether a given reference can be counted as a reference to the provider.
 
         Args:
             potential_ref (WikidataReference): The reference to compare.
@@ -54,3 +54,16 @@ class Provider(ABC):
             Reference: The reference to given.
         """
         raise NotImplementedError
+
+    def post_process_hook(self, output: Output, item: EntityPage) -> bool:
+        """Runs after the item has been edited.
+
+        This should be used to do any post-processing, such as replacing/deleting claims.
+
+        Args:
+            item (EntityPage): The item that was edited.
+
+        Returns:
+            bool: Whether the item has been edited.
+        """
+        return False

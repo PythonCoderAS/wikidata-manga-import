@@ -94,7 +94,8 @@ class AnimePlanetProvider(Provider):
                     return True
         if url_prop in potential_ref:
             for claim in potential_ref[url_prop]:
-                if re.search(rf"{base_url}/{id}", claim.getTarget().lower()):  # type: ignore
+                base_url_safe = base_url.replace(".", r"\.")
+                if re.search(rf"{base_url_safe}/{id}", claim.getTarget().lower()):  # type: ignore
                     return True
         if anime_planet_prop in potential_ref:
             for claim in potential_ref[anime_planet_prop]:

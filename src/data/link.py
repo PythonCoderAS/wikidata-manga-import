@@ -1,11 +1,11 @@
 import dataclasses
 from typing import Union
 
-import pywikibot
+from wikidata_bot_framework import EntityPage
 
 
 @dataclasses.dataclass
 class Link:
     url: str
     """The item for the language of the link."""
-    language: Union[pywikibot.ItemPage, None] = None
+    language: Union[EntityPage, None] = None

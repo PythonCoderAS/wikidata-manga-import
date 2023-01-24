@@ -8,4 +8,3 @@ import pywikibot
 class Reference:
     stated_in: pywikibot.ItemPage
     url: str
-    retrieved: datetime.datetime = datetime.datetime.now(datetime.timezone.utc)

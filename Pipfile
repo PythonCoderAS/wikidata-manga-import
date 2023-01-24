@@ -4,12 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pywikibot = "*"
-mwparserfromhell = ">=0.5.0"
-requests = "*"
 requests-cache = "*"
 beautifulsoup4 = "*"
 pony = "*"
+wikidata-bot-framework = "*"
 
 [dev-packages]
 black = "*"

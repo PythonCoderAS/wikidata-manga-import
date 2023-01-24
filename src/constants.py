@@ -4,8 +4,7 @@ from typing import Union
 
 import pywikibot
 from requests_cache import CachedSession
-
-site: pywikibot.DataSite = pywikibot.Site("wikidata", "wikidata")  # type: ignore
+from wikidata_bot_framework import site
 
 # Constants for ids of properties that may be created
 genre_prop = "P136"
@@ -35,6 +34,7 @@ md_id_prop = "P10589"
 mu_id_prop = "P11149"
 anime_planet_prop = "P11348"
 inkr_prop = "P11315"
+kitsu_prop = "P11494"
 
 # Constants for external IDs of sources that we do not pull from
 niconico_prop = "P11176"
@@ -68,6 +68,7 @@ automated_scan_properties = {
     mu_id_prop,
     anime_planet_prop,
     inkr_prop,
+    kitsu_prop,
 }
 automated_create_properties["*"] |= automated_scan_properties
 url_properties = [described_at_url_prop]
@@ -102,6 +103,7 @@ md_item = pywikibot.ItemPage(site, "Q110093307")
 mu_item = pywikibot.ItemPage(site, "Q114730827")
 anime_planet_item = pywikibot.ItemPage(site, "Q112180497")
 inkr_item = pywikibot.ItemPage(site, "Q115633593")
+kitsu_item = pywikibot.ItemPage(site, "Q115633627")
 
 # Regexes for matching external IDs
 niconico_regex = re.compile(r"seiga\.nicovideo\.jp/comic/(\d+)")

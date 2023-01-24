@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 import argparse
-import logging
 import os
 import random
 from typing import Union
 
 import pywikibot
 from pywikibot.pagegenerators import WikidataSPARQLPageGenerator
+from wikidata_bot_framework import get_random_hex
 
-from src import CustomFormatter
 from src.constants import automated_scan_properties, session, site
 from src.copy_labels import copy_labels
-from src.main import act_on_item
+from src.main import MangaImportBot
 
 parser = argparse.ArgumentParser("wikidata-anime-import")
 parser.add_argument(
@@ -28,35 +27,27 @@ parser.add_argument("--copy-from", type=str, help="The item to copy labels from.
 
 
 def act_on_item_string(
+    bot: MangaImportBot,
     item_string: str,
     copy_from_item_string: Union[str, None] = None,
-    automated_hash: str = "",
 ):
     item = pywikibot.ItemPage(site, item_string)
-    act_on_item(item, automated_hash=automated_hash)
+    bot.act_on_item(item)
     if copy_from_item_string:
         copy_from_item = pywikibot.ItemPage(site, copy_from_item_string)
         copy_labels(copy_from_item, item)
 
 
 def main(argv=None):
-    automated_hash = ""
+    bot = MangaImportBot()
     args = parser.parse_args(argv)
     if args.automatic:
-        automated_hash = "{:x}".format(random.randrange(0, 2**48))
+        bot.set_hash(get_random_hex())
         if args.input_file is not None or args.item is not None:
             pass
         elif args.copy_from is not None:
             parser.error("Automatic mode cannot be used with copy-from.")
         else:
-            # We need to reconfigure logging to write to a file.
-            logger = logging.getLogger("src")
-            os.makedirs("logs", exist_ok=True)
-            handler = logging.FileHandler("logs/automatic.log", mode="a")
-            handler.setFormatter(logging.Formatter(CustomFormatter.format_str))
-            handler.setLevel(logging.INFO)
-            logger.removeHandler(logger.handlers[0])
-            logger.addHandler(handler)
             from automatic_ids import (
                 add_ids,
                 get_ids,
@@ -83,7 +74,7 @@ def main(argv=None):
             else:
                 items = [pywikibot.ItemPage(site, f"Q{id}") for id in ids]
             for item in items:
-                act_on_item(item, automated_hash=automated_hash)
+                bot.act_on_item(item)
                 session.remove_expired_responses()
                 mark_completed(item.id)
             else:
@@ -101,12 +92,12 @@ def main(argv=None):
             parser.error("You cannot specify both an input file and a copy-from item.")
         with open(args.input_file, "r") as f:
             for line in f:
-                act_on_item_string(line.strip(), automated_hash=automated_hash)
+                act_on_item_string(bot, line.strip())
     else:
         act_on_item_string(
+            bot,
             args.item.strip(),
             copy_from_item_string=args.copy_from,
-            automated_hash=automated_hash,
         )
 
 

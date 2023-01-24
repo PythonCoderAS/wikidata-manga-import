@@ -1,7 +1,7 @@
-import pywikibot
+from wikidata_bot_framework import EntityPage
 
 
-def copy_labels(from_item: pywikibot.ItemPage, to_item: pywikibot.ItemPage):
+def copy_labels(from_item: EntityPage, to_item: EntityPage):
     data = from_item.get()
     to_item.editLabels(
         data["labels"], summary=f"Copy labels from [[{from_item.getID()}]].", bot=True

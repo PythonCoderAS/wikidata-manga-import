@@ -22,6 +22,8 @@ from ..constants import (
     english_lang_item,
     japan_item,
     japanese_lang_item,
+    kitsu_item,
+    kitsu_prop,
     korea_item,
     korean_lang_item,
     language_prop,
@@ -181,7 +183,7 @@ class MangadexProvider(Provider):
                 try:
                     r = self.session.get(f"{base_url}/{ap_id}")
                     r.raise_for_status()
-                    new_id = self.ap_new_url_regex.search(r.url).group(1)
+                    new_id = self.ap_new_url_regex.search(r.url).group(1)  # type: ignore
                     claim.setTarget(new_id)
                     for i, item in enumerate(r.history):
                         for extra_property in result.other_properties[
@@ -235,7 +237,7 @@ class MangadexProvider(Provider):
                                 extra_prop = ExtraProperty(claim=claim)
                                 extra_ref = ExtraReference(
                                     url_match_pattern=re.compile(
-                                        r"https://www.mangaupdates.com/series.html\?id=[0-9]+"
+                                        r"https://www\.mangaupdates\.com/series\.html\?id=[0-9]+"
                                     )
                                 )
                                 mu_check_claim = pywikibot.Claim(site, stated_at_prop)
@@ -259,6 +261,11 @@ class MangadexProvider(Provider):
                     claim.setTarget(mu_id)
                     extra_prop = ExtraProperty(claim=claim)
                     result.other_properties[mu_id_prop].append(extra_prop)
+            kitsu_link = data["links"].get("kt", None)
+            if kitsu_link:
+                claim = pywikibot.Claim(site, kitsu_prop)
+                claim.setTarget(kitsu_link)
+                result.other_properties[kitsu_prop].append(ExtraProperty(claim=claim))
             raw_link = data["links"].get("raw", None)
             engtl_link = data["links"].get("engtl", None)
             if raw_link:
@@ -276,7 +283,7 @@ class MangadexProvider(Provider):
                     return True
         if url_prop in potential_ref:
             for claim in potential_ref[url_prop]:
-                if re.search(rf"https://mangadex.org/(manga|title)/{id}", claim.getTarget().lower()):  # type: ignore
+                if re.search(rf"https://mangadex\.org/(manga|title)/{id}", claim.getTarget().lower()):  # type: ignore
                     return True
         if md_id_prop in potential_ref:
             for claim in potential_ref[md_id_prop]:

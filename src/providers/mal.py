@@ -5,6 +5,7 @@ import time
 from typing import Union
 
 import pywikibot
+from wikidata_bot_framework import EntityPage
 
 from ..abc.provider import Provider
 from ..constants import (
@@ -19,8 +20,6 @@ from ..data.link import Link
 from ..data.reference import Reference
 from ..data.results import Result
 from ..pywikibot_stub_types import WikidataReference
-
-logger = logging.getLogger(__name__)
 
 
 class MALProvider(Provider):
@@ -91,17 +90,17 @@ class MALProvider(Provider):
         elif cls.year_regex.match(date_string):
             return pywikibot.WbTime.PRECISION["year"]
 
-    def get(
-        self, id: str, item: pywikibot.ItemPage, *, retry_key_error_count=5
-    ) -> Result:
+    def get(self, id: str, item: EntityPage, *, retry_key_error_count=5) -> Result:
         r = self.session.get(f"{self.jikan_base}/manga/{id}/full")
         if r.status_code == 408:
-            logger.warning(
-                "Jikan.moe timed out, retrying in 5 seconds...",
-                extra={"itemId": item.id, "provider": self.name},
-            )
-            time.sleep(5)
+            time.sleep(10)
             return self.get(id, item)
+        if r.status_code // 100 == 5:
+            time.sleep(10)
+            if retry_key_error_count != 0:
+                return self.get(
+                    id, item, retry_key_error_count=retry_key_error_count - 1
+                )
         r.raise_for_status()
         json = r.json()
         try:
@@ -109,12 +108,7 @@ class MALProvider(Provider):
         except KeyError:
             if retry_key_error_count == 0:
                 raise
-            logger.warning(
-                "Jikan.moe returned an invalid response, retrying in 5 seconds... (%s retries left)",
-                retry_key_error_count,
-                extra={"itemId": item.id, "provider": self.name},
-            )
-            time.sleep(5)
+            time.sleep(10)
             return self.get(id, item, retry_key_error_count=retry_key_error_count - 1)
         result = Result()
         if data["chapters"]:

@@ -1,4 +1,5 @@
 import pywikibot
+from wikidata_bot_framework import EntityPage
 
 from ..abc.provider import Provider
 from ..constants import (
@@ -136,7 +137,7 @@ class AnilistProvider(Provider):
         "zh": chinese_lang_item,
     }
 
-    def get(self, id: str, wikidata_item: pywikibot.ItemPage) -> Result:
+    def get(self, id: str, wikidata_item: EntityPage) -> Result:
         r = self.session.post(
             self.anilist_base, json={"query": self.query, "variables": {"id": id}}
         )

@@ -1,7 +1,5 @@
 import re
 
-import pywikibot
-
 from ...abc.provider import Provider
 from ...constants import Genres, inkr_item, inkr_prop, stated_at_prop, url_prop
 from ...data.reference import Reference
@@ -73,7 +71,8 @@ class INKRProvider(Provider):
                     return True
         if url_prop in potential_ref:
             for claim in potential_ref[url_prop]:
-                if re.search(rf"{base_url}/{id}", claim.getTarget().lower()):  # type: ignore
+                base_url_safe = base_url.replace(".", r"\.")
+                if re.search(rf"{base_url_safe}/{id}", claim.getTarget().lower()):  # type: ignore
                     return True
         if inkr_prop in potential_ref:
             for claim in potential_ref[inkr_prop]:
