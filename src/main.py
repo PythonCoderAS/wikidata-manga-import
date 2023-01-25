@@ -76,9 +76,6 @@ class MangaImportBot(PropertyAdderBot):
         for provider_property, provider in providers.items():
             if provider_property not in item.claims:
                 continue
-            allowed_automatic_properties = automated_create_properties[
-                "*"
-            ] | automated_create_properties.get(provider.prop, set())
             with start_span(
                 op="provider_values",
                 description=f"Getting al data from provider {provider.name}",
@@ -135,4 +132,5 @@ class MangaImportBot(PropertyAdderBot):
         edits_made = False
         while super().act_on_item(item):
             edits_made = True
+            item.get(force=True)
         return edits_made
