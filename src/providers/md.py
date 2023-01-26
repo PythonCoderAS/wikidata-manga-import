@@ -37,6 +37,7 @@ from ..constants import (
     stated_at_prop,
     url_prop,
 )
+from ..data.bad_data import BadDataReport
 from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
 from ..data.link import Link
 from ..data.reference import Reference
@@ -106,6 +107,7 @@ class MangadexProvider(Provider):
 
     def get(self, id: str, _) -> Result:
         r = self.session.get(f"{self.md_base}/manga/{id}")
+        self.not_found_on_request_404(r)
         r.raise_for_status()
         json = r.json()
         data = json["data"]["attributes"]
@@ -182,7 +184,16 @@ class MangadexProvider(Provider):
                 result.other_properties[anime_planet_prop].append(extra_prop)
                 try:
                     r = self.session.get(f"{base_url}/{ap_id}")
-                    r.raise_for_status()
+                    if r.status_code == 404:
+                        data = {"ap_id": ap_id, "history": []}
+                        report = BadDataReport(
+                            self, id, "Anime-Planet ID not found", data
+                        )
+                        if r.history:
+                            data["history"] = [h.url for h in r.history]
+                        result.bad_data_reports.append(report)
+                    else:
+                        r.raise_for_status()
                     new_id = self.ap_new_url_regex.search(r.url).group(1)  # type: ignore
                     claim.setTarget(new_id)
                     for i, item in enumerate(r.history):
@@ -227,7 +238,16 @@ class MangadexProvider(Provider):
                         r = self.session.get(
                             f"https://www.mangaupdates.com/series.html?id={mu_id}"
                         )
-                        r.raise_for_status()
+                        if r.status_code == 404:
+                            data = {"mu_id": mu_id, "history": []}
+                            report = BadDataReport(
+                                self, id, "MangaUpdates ID not found", data
+                            )
+                            if r.history:
+                                data["history"] = [h.url for h in r.history]
+                            result.bad_data_reports.append(report)
+                        else:
+                            r.raise_for_status()
                         if r.status_code == 200:
                             text = r.text
                             if match := self.mu_new_url_regex.search(text):

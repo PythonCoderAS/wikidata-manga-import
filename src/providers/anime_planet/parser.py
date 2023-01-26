@@ -3,6 +3,7 @@ from typing import List
 
 from bs4 import BeautifulSoup, Tag
 
+from ...abc.provider import Provider
 from ...constants import session
 from . import ParserResult
 
@@ -13,6 +14,7 @@ tag_url_regex = re.compile(r"/manga/tags/([a-z-]+)", re.IGNORECASE)
 
 def get_data(manga_id: str) -> ParserResult:
     r = session.get(f"{base_url}/{manga_id}")
+    Provider.not_found_on_request_404(r)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "html.parser")
     result = ParserResult()

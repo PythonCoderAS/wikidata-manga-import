@@ -36,9 +36,10 @@ from ..constants import (
     url_blacklist,
     volume_item,
 )
-from ..data.link import Link
-from ..data.smart_precision_time import SmartPrecisionTime
+from .bad_data import BadDataReport
 from .extra_property import ExtraProperty, ExtraQualifier
+from .link import Link
+from .smart_precision_time import SmartPrecisionTime
 
 
 @dataclasses.dataclass
@@ -55,6 +56,8 @@ class Result:
         default_factory=lambda: defaultdict(list)
     )
     en_labels: set[str] = dataclasses.field(default_factory=set)
+
+    bad_data_reports: list[BadDataReport] = dataclasses.field(default_factory=list)
 
     def simplify(self):
         """Simplify the self to only have values in the other properties."""

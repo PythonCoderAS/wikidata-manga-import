@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 
+from requests import Response
 from wikidata_bot_framework import EntityPage, Output
 
 from ..constants import session as requests_session
 from ..data.reference import Reference
 from ..data.results import Result
+from ..exceptions import NotFoundException
 from ..pywikibot_stub_types import WikidataReference
 
 
@@ -67,3 +69,20 @@ class Provider(ABC):
             bool: Whether the item has been edited.
         """
         return False
+
+    # Provider utilities. They should all be staticmethods
+    @staticmethod
+    def not_found_on_request_404(r: Response):
+        """Throws a NotFoundException if the request returns a 404.
+
+        Args:
+            r (Response): The response to check.
+
+        Raises:
+            NotFoundException: If the response is a 404.
+
+        Returns:
+            None: If the response is not a 404.
+        """
+        if r.status_code == 404:
+            raise NotFoundException(r)

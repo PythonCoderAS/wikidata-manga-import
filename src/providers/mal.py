@@ -101,13 +101,14 @@ class MALProvider(Provider):
                 return self.get(
                     id, item, retry_key_error_count=retry_key_error_count - 1
                 )
+        self.not_found_on_request_404(r)
         r.raise_for_status()
         json = r.json()
         try:
             data = json["data"]
         except KeyError:
             if retry_key_error_count == 0:
-                raise
+                return Result()  # We cut out losses here
             time.sleep(10)
             return self.get(id, item, retry_key_error_count=retry_key_error_count - 1)
         result = Result()

@@ -1,7 +1,4 @@
-import re
-import sys
-import time
-from datetime import datetime
+import json
 from functools import partial
 from typing import Union
 
@@ -18,24 +15,20 @@ from wikidata_bot_framework import (
 
 from .abc.provider import Provider
 from .constants import (
-    Demographics,
-    Genres,
-    archive_date_prop,
-    archive_url_prop,
     automated_create_properties,
+    bad_import_page,
     deprecated_reason_prop,
-    kitsu_prop,
     link_rot_item,
-    retrieved_prop,
     site,
     stated_at_prop,
     url_prop,
-    url_properties,
 )
+from .data.bad_data import BadDataReport
 from .data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
 from .data.provider_results import ProviderResults
 from .data.reference import Reference
 from .data.results import Result
+from .exceptions import NotFoundException
 from .providers import providers
 from .pywikibot_stub_types import WikidataReference
 
@@ -73,6 +66,7 @@ class MangaImportBot(PropertyAdderBot):
 
     def run_item(self, item: EntityPage) -> OutputHelper:
         oh = OutputHelper()
+        bad_data_reports: dict[Provider, list[BadDataReport]] = {}
         for provider_property, provider in providers.items():
             if provider_property not in item.claims:
                 continue
@@ -90,10 +84,30 @@ class MangaImportBot(PropertyAdderBot):
                     ):
                         try:
                             result: Result = provider.get(provider_id, item)
+                        except NotFoundException:
+                            claim = pywikibot.Claim(site, provider.prop)
+                            claim.setTarget(provider_id)
+                            claim.setRank("deprecated")
+                            extra_prop = ExtraProperty(claim)
+                            qual_claim = pywikibot.Claim(site, deprecated_reason_prop)
+                            qual_claim.setTarget(link_rot_item)
+                            extra_qual = ExtraQualifier(qual_claim)
+                            extra_prop.add_qualifier(extra_qual)
+                            extra_prop.add_reference(
+                                self.make_reference(
+                                    provider,
+                                    provider_id,
+                                    provider.get_reference(provider_id),
+                                )
+                            )
+                            oh.add_property(extra_prop)
+                            continue
                         except Exception as e:
                             report_exception(e)
                             continue
                         result.simplify()
+                        if result.bad_data_reports:
+                            bad_data_reports[provider] = result.bad_data_reports
                         reference = provider.get_reference(provider_id)
                         for extra_properties in result.other_properties.values():
                             for extra_property in extra_properties:
@@ -103,6 +117,25 @@ class MangaImportBot(PropertyAdderBot):
                                     )
                                 )
                         oh.update(result.other_properties)
+        if bad_data_reports:
+            new_section = "== {{Q|%s}} ==\n" % item.getID()
+            for provider, reports in bad_data_reports.items():
+                new_section += f"=== {provider.name} ===\n"
+                for report_num, report in enumerate(reports, start=1):
+                    new_section += f"==== Report {report_num} ====\n"
+                    new_section += "'''Statement''': {{statement|%s|%s|%s}}\n" % (
+                        item.getID(),
+                        report.provider.prop,
+                        report.provider_id,
+                    )
+                    new_section += "'''Message''': %s\n" % report.message
+                    if report.data:
+                        new_section += (
+                            """'''Data''': <syntaxhighlight lang="json">\n%s\n</syntaxhighlight>\n"""
+                            % json.dumps(report.data, indent=4)
+                        )
+            bad_import_page.text += new_section
+            bad_import_page.save("Adding new bad data report", botflag=True, quiet=True)
         return oh
 
     def whitelisted_claim(self, prop: ExtraProperty) -> bool:

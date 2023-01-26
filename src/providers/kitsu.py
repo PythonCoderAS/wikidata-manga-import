@@ -14,6 +14,7 @@ from ..constants import (
 )
 from ..data.reference import Reference
 from ..data.results import Result
+from ..exceptions import NotFoundException
 from ..pywikibot_stub_types import WikidataReference
 
 
@@ -92,12 +93,19 @@ class KitsuProvider(Provider):
             r = self.session.get(url, params=params)
             r.raise_for_status()
             data = r.json()
+            if data["meta"]["count"] == 0:
+                raise NotFoundException(r)
+            elif data["meta"]["count"] != 1:
+                raise ValueError(
+                    f"Multiple results found, this should not be happening. Input slug: {id}"
+                )
             actual_data = data["data"][0]
             id = actual_data["id"]
         else:
             url = f"{self.kitsu_base}/manga/{id}"
             params = {"fields[categories]": "id", "include": "categories"}
             r = self.session.get(url, params=params)
+            self.not_found_on_request_404(r)
             r.raise_for_status()
             data = r.json()
             actual_data = data["data"]

@@ -63,6 +63,7 @@ class MangaUpdatesProvider(Provider):
     def get(self, id: str, _) -> Result:
         id_num = self.base36_to_int(id)
         r = self.session.get(f"{self.mu_base}/series/{id_num}")
+        self.not_found_on_request_404(r)
         r.raise_for_status()
         data = r.json()
         res = Result()

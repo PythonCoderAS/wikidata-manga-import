@@ -141,6 +141,7 @@ class AnilistProvider(Provider):
         r = self.session.post(
             self.anilist_base, json={"query": self.query, "variables": {"id": id}}
         )
+        self.not_found_on_request_404(r)
         r.raise_for_status()
         json = r.json()
         data = json["data"]["Media"]

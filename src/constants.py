@@ -182,3 +182,5 @@ session = CachedSession(backend="memory")
 session.headers[
     "user-agent"
 ] = "AniMangaDBImportBot/Wikidata (https://wikidata.org/wiki/User:AniMangaDBImportBot) (abuse: https://wikidata.org/wiki/User_talk:RPI2026F1)"
+
+bad_import_page = pywikibot.Page(site, "User:RPI2026F1Bot/Task1/Import errors")
