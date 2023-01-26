@@ -109,7 +109,10 @@ class KitsuProvider(Provider):
             r.raise_for_status()
             data = r.json()
             actual_data = data["data"]
-        categories = [int(item["id"]) for item in data["included"]]
+        if "included" in data:
+            categories = [int(item["id"]) for item in data["included"]]
+        else:
+            categories = []
         result = Result()
         attributes = actual_data["attributes"]
         genres = [
