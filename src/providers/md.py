@@ -102,7 +102,7 @@ class MangadexProvider(Provider):
     }
 
     mu_new_url_regex = re.compile(r"https://www\.mangaupdates\.com/series/([0-9a-z]+)")
-    ap_new_url_regex = re.compile(rf"{base_url}/([a-z-]+)", re.IGNORECASE)
+    ap_new_url_regex = re.compile(rf"{base_url}/([a-z\d-]+)", re.IGNORECASE)
     bw_regex_md = re.compile(r"series/(\d+)")
 
     def get(self, id: str, _) -> Result:
