@@ -90,9 +90,10 @@ class KitsuProvider(Provider):
                 "page[offset]": 0,
                 "include": "categories",
             }
-            r = self.session.get(url, params=params)
-            r.raise_for_status()
-            data = r.json()
+            r, data = self.do_request_with_retries("GET", url, params=params)
+            if r is None or data is None:
+                return Result()
+            assert isinstance(data, dict)
             if data["meta"]["count"] == 0:
                 raise NotFoundException(r)
             elif data["meta"]["count"] != 1:
@@ -104,10 +105,12 @@ class KitsuProvider(Provider):
         else:
             url = f"{self.kitsu_base}/manga/{id}"
             params = {"fields[categories]": "id", "include": "categories"}
-            r = self.session.get(url, params=params)
-            self.not_found_on_request_404(r)
-            r.raise_for_status()
-            data = r.json()
+            r, data = self.do_request_with_retries(
+                "GET", url, params=params, not_found_on_request_404=True
+            )
+            if r is None or data is None:
+                return Result()
+            assert isinstance(data, dict)
             actual_data = data["data"]
         if "included" in data:
             categories = [int(item["id"]) for item in data["included"]]

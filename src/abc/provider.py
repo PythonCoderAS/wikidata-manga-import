@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
+import time
+from typing import Any, Literal, Union, overload
 
 from requests import Response
+import requests
 from wikidata_bot_framework import EntityPage, Output
 
 from ..constants import session as requests_session
@@ -8,6 +11,8 @@ from ..data.reference import Reference
 from ..data.results import Result
 from ..exceptions import NotFoundException
 from ..pywikibot_stub_types import WikidataReference
+
+_JSONType = Union[str, int, float, bool, list[Any], dict[str, Any]]
 
 
 class Provider(ABC):
@@ -70,7 +75,8 @@ class Provider(ABC):
         """
         return False
 
-    # Provider utilities. They should all be staticmethods
+    # Provider utilities. They should mostly be staticmethods
+
     @staticmethod
     def not_found_on_request_404(r: Response):
         """Throws a NotFoundException if the request returns a 404.
@@ -86,3 +92,155 @@ class Provider(ABC):
         """
         if r.status_code == 404:
             raise NotFoundException(r)
+
+    def do_request_with_retries(
+        self,
+        method: str,
+        url: str,
+        retries: int = 3,
+        sleep_time_between_retries: float = 5,
+        retry_on_status_codes: tuple[int, ...] = tuple(),
+        retry_on_status_code_range: tuple[int, ...] = (5,),
+        retry_on_exceptions: tuple[type[Exception], ...] = (
+            requests.ConnectionError,
+            requests.exceptions.ChunkedEncodingError,
+            requests.exceptions.ContentDecodingError,
+        ),
+        on_retry_limit_exhuasted_status_code: Literal[
+            "raise", "ignore", "return_none"
+        ] = "return_none",
+        on_other_bad_status_code: Literal["raise", "ignore", "return_none"] = "raise",
+        not_found_on_request_404: bool = False,
+        on_retry_limit_exhaused_exception: Literal[
+            "raise", "return_none"
+        ] = "return_none",
+        return_json: bool = True,
+        retry_on_json_exceptions: tuple[type[Exception], ...] = (
+            requests.JSONDecodeError,
+        ),
+        on_retry_limit_exhuasted_json_exception: Literal[
+            "raise", "return_none"
+        ] = "return_none",
+        **kwargs
+    ) -> tuple[Union[requests.Response, None], Union[_JSONType, None]]:
+        try:
+            r = self.session.request(method, url, **kwargs)
+        except retry_on_exceptions:
+            if retries == 0:
+                if on_retry_limit_exhaused_exception == "return_none":
+                    return None, None
+                elif on_retry_limit_exhaused_exception == "raise":
+                    raise
+            else:
+                time.sleep(sleep_time_between_retries)
+                return self.do_request_with_retries(
+                    method,
+                    url,
+                    retries=retries - 1,
+                    sleep_time_between_retries=sleep_time_between_retries,
+                    retry_on_status_codes=retry_on_status_codes,
+                    retry_on_status_code_range=retry_on_status_code_range,
+                    retry_on_exceptions=retry_on_exceptions,
+                    on_retry_limit_exhuasted_status_code=on_retry_limit_exhuasted_status_code,
+                    on_other_bad_status_code=on_other_bad_status_code,
+                    not_found_on_request_404=not_found_on_request_404,
+                    on_retry_limit_exhaused_exception=on_retry_limit_exhaused_exception,
+                    return_json=return_json,
+                    retry_on_json_exceptions=retry_on_json_exceptions,
+                    on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
+                    **kwargs
+                )
+        status = r.status_code
+        if status in retry_on_status_codes:
+            if retries == 0:
+                if on_retry_limit_exhuasted_status_code == "return_none":
+                    return None, None
+                elif on_retry_limit_exhuasted_status_code == "raise":
+                    r.raise_for_status()
+                elif on_retry_limit_exhuasted_status_code == "ignore":
+                    pass
+            else:
+                time.sleep(sleep_time_between_retries)
+                return self.do_request_with_retries(
+                    method,
+                    url,
+                    retries=retries - 1,
+                    sleep_time_between_retries=sleep_time_between_retries,
+                    retry_on_status_codes=retry_on_status_codes,
+                    retry_on_status_code_range=retry_on_status_code_range,
+                    retry_on_exceptions=retry_on_exceptions,
+                    on_retry_limit_exhuasted_status_code=on_retry_limit_exhuasted_status_code,
+                    on_other_bad_status_code=on_other_bad_status_code,
+                    not_found_on_request_404=not_found_on_request_404,
+                    on_retry_limit_exhaused_exception=on_retry_limit_exhaused_exception,
+                    return_json=return_json,
+                    retry_on_json_exceptions=retry_on_json_exceptions,
+                    on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
+                    **kwargs
+                )
+        elif not_found_on_request_404 and status == 404:
+            raise NotFoundException(r)
+        elif status // 100 in retry_on_status_code_range:
+            if retries == 0:
+                if on_retry_limit_exhuasted_status_code == "return_none":
+                    return None, None
+                elif on_retry_limit_exhuasted_status_code == "raise":
+                    r.raise_for_status()
+                elif on_retry_limit_exhuasted_status_code == "ignore":
+                    pass
+            else:
+                time.sleep(sleep_time_between_retries)
+                return self.do_request_with_retries(
+                    method,
+                    url,
+                    retries=retries - 1,
+                    sleep_time_between_retries=sleep_time_between_retries,
+                    retry_on_status_codes=retry_on_status_codes,
+                    retry_on_status_code_range=retry_on_status_code_range,
+                    retry_on_exceptions=retry_on_exceptions,
+                    on_retry_limit_exhuasted_status_code=on_retry_limit_exhuasted_status_code,
+                    on_other_bad_status_code=on_other_bad_status_code,
+                    not_found_on_request_404=not_found_on_request_404,
+                    on_retry_limit_exhaused_exception=on_retry_limit_exhaused_exception,
+                    return_json=return_json,
+                    retry_on_json_exceptions=retry_on_json_exceptions,
+                    on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
+                    **kwargs
+                )
+        elif status // 100 > 3:
+            if on_other_bad_status_code == "return_none":
+                return None, None
+            elif on_other_bad_status_code == "raise":
+                r.raise_for_status()
+            elif on_other_bad_status_code == "ignore":
+                pass
+        if return_json:
+            try:
+                return r, r.json()
+            except retry_on_json_exceptions:
+                if retries == 0:
+                    if on_retry_limit_exhuasted_json_exception == "return_none":
+                        return r, None
+                    elif on_retry_limit_exhuasted_json_exception == "raise":
+                        raise
+                else:
+                    time.sleep(sleep_time_between_retries)
+                    return self.do_request_with_retries(
+                        method,
+                        url,
+                        retries=retries - 1,
+                        sleep_time_between_retries=sleep_time_between_retries,
+                        retry_on_status_codes=retry_on_status_codes,
+                        retry_on_status_code_range=retry_on_status_code_range,
+                        retry_on_exceptions=retry_on_exceptions,
+                        on_retry_limit_exhuasted_status_code=on_retry_limit_exhuasted_status_code,
+                        on_other_bad_status_code=on_other_bad_status_code,
+                        not_found_on_request_404=not_found_on_request_404,
+                        on_retry_limit_exhaused_exception=on_retry_limit_exhaused_exception,
+                        return_json=return_json,
+                        retry_on_json_exceptions=retry_on_json_exceptions,
+                        on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
+                        **kwargs
+                    )
+        else:
+            return r, None

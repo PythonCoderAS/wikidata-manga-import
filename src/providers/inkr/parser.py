@@ -1,7 +1,6 @@
 import re
 
-from ...abc.provider import Provider
-from ...constants import session
+from ...constants import inkr_prop
 from . import ParserResult
 
 base_url = "https://comics.inkr.com/title"
@@ -9,9 +8,17 @@ genre_url_regex = re.compile(r"https://comics\.inkr\.com/genre/(\d+)", re.IGNORE
 
 
 def get_data(id: str) -> ParserResult:
-    r = session.get(f"{base_url}/{id}")
-    Provider.not_found_on_request_404(r)
-    r.raise_for_status()
+    from .. import providers
+
+    r, _ = providers[inkr_prop].do_request_with_retries(
+        "GET",
+        f"{base_url}/{id}",
+        return_json=False,
+        on_retry_limit_exhaused_exception="raise",
+        not_found_on_request_404=True,
+    )
+    if r is None:
+        return ParserResult()
     text = r.text
     genres = genre_url_regex.findall(text)
     return ParserResult(genres=genres)

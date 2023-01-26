@@ -90,27 +90,19 @@ class MALProvider(Provider):
         elif cls.year_regex.match(date_string):
             return pywikibot.WbTime.PRECISION["year"]
 
-    def get(self, id: str, item: EntityPage, *, retry_key_error_count=5) -> Result:
-        r = self.session.get(f"{self.jikan_base}/manga/{id}/full")
-        if r.status_code == 408:
-            time.sleep(10)
-            return self.get(id, item)
-        if r.status_code // 100 == 5:
-            time.sleep(10)
-            if retry_key_error_count != 0:
-                return self.get(
-                    id, item, retry_key_error_count=retry_key_error_count - 1
-                )
-        self.not_found_on_request_404(r)
-        r.raise_for_status()
-        json = r.json()
-        try:
-            data = json["data"]
-        except KeyError:
-            if retry_key_error_count == 0:
-                return Result()  # We cut out losses here
-            time.sleep(10)
-            return self.get(id, item, retry_key_error_count=retry_key_error_count - 1)
+    def get(self, id: str, _: EntityPage) -> Result:
+        r, json = self.do_request_with_retries(
+            "GET",
+            f"{self.jikan_base}/manga/{id}/full",
+            retries=5,
+            sleep_time_between_retries=10,
+            retry_on_status_codes=(408,),
+            not_found_on_request_404=True,
+        )
+        if r is None or json is None:
+            return Result()
+        assert isinstance(json, dict)
+        data = json["data"]
         result = Result()
         if data["chapters"]:
             result.chapters = data["chapters"]

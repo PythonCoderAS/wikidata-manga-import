@@ -37,6 +37,7 @@ from ..constants import (
     stated_at_prop,
     url_prop,
 )
+from ..exceptions import AbortError
 from ..data.bad_data import BadDataReport
 from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
 from ..data.link import Link
@@ -106,10 +107,12 @@ class MangadexProvider(Provider):
     bw_regex_md = re.compile(r"series/(\d+)")
 
     def get(self, id: str, _) -> Result:
-        r = self.session.get(f"{self.md_base}/manga/{id}")
-        self.not_found_on_request_404(r)
-        r.raise_for_status()
-        json = r.json()
+        r, json = self.do_request_with_retries(
+            "GET", f"{self.md_base}/manga/{id}", not_found_on_request_404=True
+        )
+        if r is None or json is None:
+            return Result()
+        assert isinstance(json, dict)
         data = json["data"]["attributes"]
         result = Result()
         if data["tags"]:
@@ -183,7 +186,15 @@ class MangadexProvider(Provider):
                 extra_prop = ExtraProperty(claim=claim)
                 result.other_properties[anime_planet_prop].append(extra_prop)
                 try:
-                    r = self.session.get(f"{base_url}/{ap_id}")
+                    r, _ = self.do_request_with_retries(
+                        "GET",
+                        f"{base_url}/{ap_id}",
+                        on_other_bad_status_code="ignore",
+                        on_retry_limit_exhaused_exception="raise",
+                        return_json=False,
+                    )
+                    if r is None:
+                        raise AbortError()
                     if r.status_code == 404:
                         data = {"ap_id": ap_id, "history": []}
                         report = BadDataReport(
@@ -192,6 +203,7 @@ class MangadexProvider(Provider):
                         if r.history:
                             data["history"] = [h.url for h in r.history]
                         result.bad_data_reports.append(report)
+                        raise AbortError()
                     else:
                         r.raise_for_status()
                     new_id = self.ap_new_url_regex.search(r.url).group(1)  # type: ignore
@@ -229,15 +241,27 @@ class MangadexProvider(Provider):
                             result.other_properties[anime_planet_prop].append(
                                 redirect_extra_prop
                             )
-                except (requests.HTTPError, UnicodeDecodeError):
+                except (
+                    requests.HTTPError,
+                    requests.ConnectionError,
+                    UnicodeDecodeError,
+                    AbortError,
+                ):
                     claim.setTarget(ap_id)
             mu_id: Union[str, None] = data["links"].get("mu", None)
             if mu_id:
                 if mu_id.isnumeric():
                     try:
-                        r = self.session.get(
-                            f"https://www.mangaupdates.com/series.html?id={mu_id}"
+                        r, _ = self.do_request_with_retries(
+                            "GET",
+                            f"https://www.mangaupdates.com/series.html?id={mu_id}",
+                            on_other_bad_status_code="ignore",
+                            on_retry_limit_exhaused_exception="raise",
+                            retry_on_status_codes=(429,),
+                            return_json=False,
                         )
+                        if r is None:
+                            raise AbortError()
                         if r.status_code == 404:
                             data = {"mu_id": mu_id, "history": []}
                             report = BadDataReport(
@@ -246,6 +270,7 @@ class MangadexProvider(Provider):
                             if r.history:
                                 data["history"] = [h.url for h in r.history]
                             result.bad_data_reports.append(report)
+                            raise AbortError()
                         else:
                             r.raise_for_status()
                         if r.status_code == 200:
@@ -274,7 +299,12 @@ class MangadexProvider(Provider):
                                 extra_ref.new_reference_props[url_prop] = url_ref_claim
                                 extra_prop.extra_references.append(extra_ref)
                                 result.other_properties[mu_id_prop].append(extra_prop)
-                    except (requests.HTTPError, UnicodeDecodeError):
+                    except (
+                        requests.HTTPError,
+                        requests.ConnectionError,
+                        UnicodeDecodeError,
+                        AbortError,
+                    ):
                         pass
                 else:
                     claim = pywikibot.Claim(site, mu_id_prop)

@@ -138,12 +138,15 @@ class AnilistProvider(Provider):
     }
 
     def get(self, id: str, wikidata_item: EntityPage) -> Result:
-        r = self.session.post(
-            self.anilist_base, json={"query": self.query, "variables": {"id": id}}
+        r, json = self.do_request_with_retries(
+            "POST",
+            self.anilist_base,
+            json={"query": self.query, "variables": {"id": id}},
+            not_found_on_request_404=True,
         )
-        self.not_found_on_request_404(r)
-        r.raise_for_status()
-        json = r.json()
+        if r is None or json is None:
+            return Result()
+        assert isinstance(json, dict)
         data = json["data"]["Media"]
         result = Result()
         if data["idMal"] is not None:

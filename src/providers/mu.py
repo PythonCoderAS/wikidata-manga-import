@@ -62,11 +62,16 @@ class MangaUpdatesProvider(Provider):
 
     def get(self, id: str, _) -> Result:
         id_num = self.base36_to_int(id)
-        r = self.session.get(f"{self.mu_base}/series/{id_num}")
-        self.not_found_on_request_404(r)
-        r.raise_for_status()
-        data = r.json()
+        r, data = self.do_request_with_retries(
+            "GET",
+            f"{self.mu_base}/series/{id_num}",
+            not_found_on_request_404=True,
+            retry_on_status_codes=(429,),
+        )
         res = Result()
+        if r is None or data is None:
+            return Result()
+        assert isinstance(data, dict)
         for genre_obj in data.get("genres", []):
             genre = genre_obj.get("genre", "")
             genre_enum = self.genre_mapping.get(genre, None)

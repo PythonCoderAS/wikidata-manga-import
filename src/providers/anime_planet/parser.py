@@ -4,7 +4,7 @@ from typing import List
 from bs4 import BeautifulSoup, Tag
 
 from ...exceptions import NotFoundException
-from ...constants import session
+from ...constants import anime_planet_prop
 from . import ParserResult
 
 base_url = "https://www.anime-planet.com/manga"
@@ -13,13 +13,22 @@ tag_url_regex = re.compile(r"/manga/tags/([a-z-]+)", re.IGNORECASE)
 
 
 def get_data(manga_id: str) -> ParserResult:
-    r = session.get(f"{base_url}/{manga_id}")
-    r.raise_for_status()
+    from .. import providers
+
+    r, _ = providers[anime_planet_prop].do_request_with_retries(
+        "GET",
+        f"{base_url}/{manga_id}",
+        on_retry_limit_exhaused_exception="raise",
+        return_json=False,
+    )
+    if r is None:
+        return ParserResult()
     if r.url != f"{base_url}/{manga_id}":
         raise NotFoundException(r)
     soup = BeautifulSoup(r.text, "html.parser")
     result = ParserResult()
     section = soup.find(attrs={"id": "siteContainer"}).find("section")
+    assert section is not None
     divs: List[Tag] = section.find_all("div", recursive=False)
     vol_and_chap_info, magazine_info, year_info, = (
         divs[0],
