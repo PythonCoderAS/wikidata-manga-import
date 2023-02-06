@@ -227,7 +227,7 @@
                 "sha256:64299f4909223da747622c030b781c0d7811e359c37124b4bd368fb8c6518baa",
                 "sha256:98b1b2782e3c6c4904938b84c0eb932721069dfdb9134313beff7c83c2df24bf"
             ],
-            "markers": "python_version >= '3.7' and python_version < '4'",
+            "markers": "python_version >= '3.7' and python_version < '4.0'",
             "version": "==2.28.2"
         },
         "requests-cache": {
@@ -287,11 +287,11 @@
         },
         "wikidata-bot-framework": {
             "hashes": [
-                "sha256:24d7a0f928cac4817f238b99173030ef32dd1afec3fe6fb6773071f74291d020",
-                "sha256:7ba013c50ee2271075470f00ddb0d87883f413fd5a407061e751a9f239df5c6b"
+                "sha256:01a77bdf9fbd5483687269d914726a0a9a6980d9e08259902c3a4b53cd0801ad",
+                "sha256:766d40a17a88a380f9a50bc4d7a89cf6895b99254721667e2e113f0dea1adf35"
             ],
             "index": "pypi",
-            "version": "==6.0.1"
+            "version": "==6.0.4"
         }
     },
     "develop": {
