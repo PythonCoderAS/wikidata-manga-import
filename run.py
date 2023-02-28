@@ -66,10 +66,16 @@ def main(argv=None):
                     ]
                 )
                 complete_sparql = "SELECT DISTINCT ?item WHERE { %s }" % props_sparql
-                items = [
-                    item
-                    for item in WikidataSPARQLPageGenerator(complete_sparql, site=site)
-                ]
+                items = sorted(
+                    [
+                        item
+                        for item in WikidataSPARQLPageGenerator(
+                            complete_sparql, site=site
+                        )
+                    ],
+                    key=lambda item: item.getID(numeric=True),
+                    reverse=True,
+                )
                 add_ids(item.id for item in items)
             else:
                 items = [pywikibot.ItemPage(site, f"Q{id}") for id in ids]
