@@ -16,13 +16,6 @@
         ]
     },
     "default": {
-        "appdirs": {
-            "hashes": [
-                "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41",
-                "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"
-            ],
-            "version": "==1.4.4"
-        },
         "attrs": {
             "hashes": [
                 "sha256:29e95c7f6778868dbd49170f98f8818f78f3dc5e0e37c0b1f474e3561b240836",
@@ -198,6 +191,14 @@
             "markers": "python_version >= '3.6'",
             "version": "==0.6.4"
         },
+        "platformdirs": {
+            "hashes": [
+                "sha256:8a1228abb1ef82d788f74139988b137e78692984ec7b08eaa6c65f1723af28f9",
+                "sha256:b1d5eb14f221506f50d6604a561f4c5786d9e80355219694a1b244bcd96f4567"
+            ],
+            "markers": "python_version >= '3.7'",
+            "version": "==3.0.0"
+        },
         "pony": {
             "hashes": [
                 "sha256:5f45fc67587f4520c560a57148cc573b097d42f82f5cb200d72c957b5708198d",
@@ -232,18 +233,18 @@
         },
         "requests-cache": {
             "hashes": [
-                "sha256:3a16021a4b5014b5b32af9c34f07cb911e99a69074d664dfd4fddb62a2997c21",
-                "sha256:eaed4eb5fd5c392ba5e7cfa000d4ab96b1d32c1a1620f37aa558c43741ac362b"
+                "sha256:162f591ed9ad0ea601cefd898770f499d473cb056466e85494299a1b0ca61cbf",
+                "sha256:558e335bf1c0f42ecbcf1abb8e7c8e679845ee522d75d1c50b77d4fbf5434012"
             ],
             "index": "pypi",
-            "version": "==0.9.8"
+            "version": "==1.0.0"
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:69ecbb2e1ff4db02a06c4f20f6f69cb5dfe3ebfbc06d023e40d77cf78e9c37e7",
-                "sha256:7ad4d37dd093f4a7cb5ad804c6efe9e8fab8873f7ffc06042dc3f3fd700a93ec"
+                "sha256:633edefead34d976ff22e7edc367cdf57768e24bc714615ccae746d9d91795ae",
+                "sha256:a900845bd78c263d49695d48ce78a4bce1030bbd917e0b6cc021fc000c901113"
             ],
-            "version": "==1.15.0"
+            "version": "==1.16.0"
         },
         "setuptools": {
             "hashes": [
