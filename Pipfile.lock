@@ -193,11 +193,11 @@
         },
         "platformdirs": {
             "hashes": [
-                "sha256:8a1228abb1ef82d788f74139988b137e78692984ec7b08eaa6c65f1723af28f9",
-                "sha256:b1d5eb14f221506f50d6604a561f4c5786d9e80355219694a1b244bcd96f4567"
+                "sha256:13b08a53ed71021350c9e300d4ea8668438fb0046ab3937ac9a29913a1a1350a",
+                "sha256:accc3665857288317f32c7bebb5a8e482ba717b474f3fc1d18ca7f9214be0cef"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==3.0.0"
+            "version": "==3.1.0"
         },
         "pony": {
             "hashes": [
@@ -217,11 +217,11 @@
         },
         "pywikibot": {
             "hashes": [
-                "sha256:6740a43d0a53690e26b4df4f6e697d2bf8b95170c954013c41253cb8d0f63c4b",
-                "sha256:6be51d542321c28bda5cdda1157482a4c615182e5251b5ab0b67299e417d49c0"
+                "sha256:66b95cfc54e656a5d98cf1c07585ee20f13b8e4efc338d2656a11722df2728b1",
+                "sha256:b091bbc3ff7a09a08815d6de9114e2f6542de2df2bd81e640888c33ea0fb7918"
             ],
             "markers": "python_full_version >= '3.6.1'",
-            "version": "==8.0.0"
+            "version": "==8.0.1"
         },
         "requests": {
             "hashes": [
@@ -296,11 +296,11 @@
         },
         "wikidata-bot-framework": {
             "hashes": [
-                "sha256:3cd559b62988e980c89d968ca67269621cab048cc234dd6a8117d87a35eb81f0",
-                "sha256:ecd79031175f646e4be5518a1c9919243d04928b5d3ca0bc72e33375d7888c9b"
+                "sha256:31e8d72313997a94961b4db1a4341729c3a5417c10cfae5cf091db7c8da3b6a3",
+                "sha256:7c5ed423e86cfa5f9434a845af1b022bd2166d47024cf0c97048d0221039e37f"
             ],
             "index": "pypi",
-            "version": "==7.0.6"
+            "version": "==7.0.7"
         }
     },
     "develop": {
@@ -377,11 +377,11 @@
         },
         "platformdirs": {
             "hashes": [
-                "sha256:8a1228abb1ef82d788f74139988b137e78692984ec7b08eaa6c65f1723af28f9",
-                "sha256:b1d5eb14f221506f50d6604a561f4c5786d9e80355219694a1b244bcd96f4567"
+                "sha256:13b08a53ed71021350c9e300d4ea8668438fb0046ab3937ac9a29913a1a1350a",
+                "sha256:accc3665857288317f32c7bebb5a8e482ba717b474f3fc1d18ca7f9214be0cef"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==3.0.0"
+            "version": "==3.1.0"
         },
         "tomli": {
             "hashes": [
