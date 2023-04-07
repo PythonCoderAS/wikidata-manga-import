@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import os
-import random
 from typing import Union
 
 import pywikibot
@@ -48,46 +46,26 @@ def main(argv=None):
         elif args.copy_from is not None:
             parser.error("Automatic mode cannot be used with copy-from.")
         else:
-            from automatic_ids import (
-                add_ids,
-                get_ids,
-                init_db,
-                mark_completed,
-                reset_db,
+            props_sparql = " UNION ".join(
+                [
+                    "{ ?item p:%s ?_. }" % property
+                    for property in automated_scan_properties
+                ]
             )
-
-            init_db()
-            ids = get_ids()
-            if not ids:
-                props_sparql = " UNION ".join(
-                    [
-                        "{ ?item p:%s ?_. }" % property
-                        for property in automated_scan_properties
-                    ]
-                )
-                complete_sparql = "SELECT DISTINCT ?item WHERE { %s }" % props_sparql
-                items = sorted(
-                    [
-                        item
-                        for item in WikidataSPARQLPageGenerator(
-                            complete_sparql, site=site
-                        )
-                    ],
-                    key=lambda item: item.getID(numeric=True),
-                    reverse=True,
-                )
-                add_ids(item.id for item in items)
-            else:
-                items = [pywikibot.ItemPage(site, f"Q{id}") for id in ids]
+            complete_sparql = "SELECT DISTINCT ?item WHERE { %s }" % props_sparql
+            items = sorted(
+                [
+                    item
+                    for item in WikidataSPARQLPageGenerator(
+                        complete_sparql, site=site
+                    )
+                ],
+                key=lambda item: item.getID(numeric=True),
+                reverse=True,
+            )
             for item in items:
                 bot.act_on_item(item)
                 session.remove_expired_responses()
-                mark_completed(item.id)
-            else:
-                reset_db()
-                with open("done.txt", "w") as f:
-                    f.write("Done.")
-            return
 
     if args.input_file is None and args.item is None:
         parser.error("You must specify either an input file or an item.")
