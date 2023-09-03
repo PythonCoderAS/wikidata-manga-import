@@ -198,11 +198,11 @@
         },
         "pywikibot": {
             "hashes": [
-                "sha256:6fe9d4c2496a485d5751ea8328d40d0ac9f52b50e3ae9ca4113b9176af92c4c0",
-                "sha256:c89b4da21ff5b0fdd2c7d4e6f12945bf8402cce298ea580d4d1693fd777ff9f4"
+                "sha256:13d540d0876c38d8dbf962ae74374300e8c2bef0694c17ebd8e93af1bb6c8e06",
+                "sha256:dec671b3ef9b8dcff1061878ae5e8d579ec25b9263db6e6b278139140870e083"
             ],
             "markers": "python_full_version >= '3.6.1'",
-            "version": "==8.3.1"
+            "version": "==8.3.2"
         },
         "requests": {
             "hashes": [
@@ -223,10 +223,10 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:3e17215d8006612e2df02b0e73115eb8376c37e3f586d8436fa41644e605074d",
-                "sha256:a99ee105384788c3f228726a88baf515fe7b5f1d2d0f215a03d194369f158df7"
+                "sha256:2e53ad63f96bb9da6570ba2e755c267e529edcf58580a2c0d2a11ef26e1e678b",
+                "sha256:7dc873b87e1faf4d00614afd1058bfa1522942f33daef8a59f90de8ed75cd10c"
             ],
-            "version": "==1.29.2"
+            "version": "==1.30.0"
         },
         "setuptools": {
             "hashes": [
@@ -246,11 +246,11 @@
         },
         "soupsieve": {
             "hashes": [
-                "sha256:1c1bfee6819544a3447586c889157365a27e10d88cde3ad3da0cf0ddf646feb8",
-                "sha256:89d12b2d5dfcd2c9e8c22326da9d9aa9cb3dfab0a83a024f05704076ee8d35ea"
+                "sha256:5663d5a7b3bfaeee0bc4372e7fc48f9cff4940b3eec54a6451cc5299f1097690",
+                "sha256:eaa337ff55a1579b6549dc679565eac1e3d000563bcb1c8ab0d0fefbc0c2cdc7"
             ],
-            "markers": "python_version >= '3.7'",
-            "version": "==2.4.1"
+            "markers": "python_version >= '3.8'",
+            "version": "==2.5"
         },
         "typing-extensions": {
             "hashes": [
