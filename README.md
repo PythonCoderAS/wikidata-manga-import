@@ -1,2 +1,3 @@
-# wikidata-anime-import
+# wikidata-manga-import
+
 Import data from anime databases to Wikidata

@@ -10,7 +10,7 @@ from src.constants import automated_scan_properties, session, site
 from src.copy_labels import copy_labels
 from src.main import MangaImportBot
 
-parser = argparse.ArgumentParser("wikidata-anime-import")
+parser = argparse.ArgumentParser("wikidata-manga-import")
 parser.add_argument(
     "-a",
     "--automatic",
@@ -56,9 +56,7 @@ def main(argv=None):
             items = sorted(
                 [
                     item
-                    for item in WikidataSPARQLPageGenerator(
-                        complete_sparql, site=site
-                    )
+                    for item in WikidataSPARQLPageGenerator(complete_sparql, site=site)
                 ],
                 key=lambda item: item.getID(numeric=True),
                 reverse=True,
