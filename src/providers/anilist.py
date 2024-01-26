@@ -221,7 +221,12 @@ class AnilistProvider(Provider):
                         claim=english_claim, skip_if_conflicting_language_exists=True
                     )
                 )
-            if native is not None and language_prop in wikidata_item.claims and wikidata_item.claims[language_prop][0] in self.language_to_iso_639_1.values():  # type: ignore
+            if (
+                native is not None
+                and language_prop in wikidata_item.claims
+                and wikidata_item.claims[language_prop][0]
+                in self.language_to_iso_639_1.values()
+            ):  # type: ignore
                 lang_item = wikidata_item.claims[language_prop][0]  # type: ignore
                 lang_key = next(
                     key

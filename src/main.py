@@ -50,7 +50,9 @@ class MangaImportBot(PropertyAdderBot):
         self, provider: Provider, provider_id: str, reference: Reference
     ) -> ExtraReference:
         ref = ExtraReference()
-        ref.is_compatible_reference = partial(provider.compute_similar_reference, id=provider_id)  # type: ignore
+        ref.is_compatible_reference = partial(
+            provider.compute_similar_reference, id=provider_id
+        )  # type: ignore
         stated_in_ref = pywikibot.Claim(site, stated_at_prop, is_reference=True)
         stated_in_ref.setTarget(reference.stated_in)
         ref.add_claim(stated_in_ref)

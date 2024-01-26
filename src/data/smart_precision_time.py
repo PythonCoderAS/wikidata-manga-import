@@ -9,7 +9,7 @@ class SmartPrecisionTime(pywikibot.WbTime):
         year: Optional[int] = None,
         month: Optional[int] = None,
         day: Optional[int] = None,
-        **kwargs
+        **kwargs,
     ):
         if month is None and day is None:
             kwargs.setdefault("precision", pywikibot.WbTime.PRECISION["year"])

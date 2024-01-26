@@ -331,7 +331,10 @@ class MangadexProvider(Provider):
                     return True
         if url_prop in potential_ref:
             for claim in potential_ref[url_prop]:
-                if re.search(rf"https://mangadex\.org/(manga|title)/{id}", claim.getTarget().lower()):  # type: ignore
+                if re.search(
+                    rf"https://mangadex\.org/(manga|title)/{id}",
+                    claim.getTarget().lower(),
+                ):  # type: ignore
                     return True
         if md_id_prop in potential_ref:
             for claim in potential_ref[md_id_prop]:

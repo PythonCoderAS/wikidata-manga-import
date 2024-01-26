@@ -121,7 +121,7 @@ class Provider(ABC):
         on_retry_limit_exhuasted_json_exception: Literal[
             "raise", "return_none"
         ] = "return_none",
-        **kwargs
+        **kwargs,
     ) -> tuple[Union[requests.Response, None], Union[_JSONType, None]]:
         try:
             r = self.session.request(method, url, **kwargs)
@@ -148,7 +148,7 @@ class Provider(ABC):
                     return_json=return_json,
                     retry_on_json_exceptions=retry_on_json_exceptions,
                     on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
-                    **kwargs
+                    **kwargs,
                 )
         status = r.status_code
         if status in retry_on_status_codes:
@@ -176,7 +176,7 @@ class Provider(ABC):
                     return_json=return_json,
                     retry_on_json_exceptions=retry_on_json_exceptions,
                     on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
-                    **kwargs
+                    **kwargs,
                 )
         elif not_found_on_request_404 and status == 404:
             raise NotFoundException(r)
@@ -205,7 +205,7 @@ class Provider(ABC):
                     return_json=return_json,
                     retry_on_json_exceptions=retry_on_json_exceptions,
                     on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
-                    **kwargs
+                    **kwargs,
                 )
         elif status // 100 > 3:
             if on_other_bad_status_code == "return_none":
@@ -240,7 +240,7 @@ class Provider(ABC):
                         return_json=return_json,
                         retry_on_json_exceptions=retry_on_json_exceptions,
                         on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
-                        **kwargs
+                        **kwargs,
                     )
         else:
             return r, None

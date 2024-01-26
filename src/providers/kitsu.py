@@ -125,9 +125,13 @@ class KitsuProvider(Provider):
         ]
         result.genres = genres
         if attributes["startDate"]:
-            result.start_date = pywikibot.WbTime.fromTimestamp(pywikibot.Timestamp.strptime(attributes["startDate"], "%Y-%m-%d"))  # type: ignore
+            result.start_date = pywikibot.WbTime.fromTimestamp(
+                pywikibot.Timestamp.strptime(attributes["startDate"], "%Y-%m-%d")
+            )  # type: ignore
         if attributes["endDate"]:
-            result.end_date = pywikibot.WbTime.fromTimestamp(pywikibot.Timestamp.strptime(attributes["endDate"], "%Y-%m-%d"))  # type: ignore
+            result.end_date = pywikibot.WbTime.fromTimestamp(
+                pywikibot.Timestamp.strptime(attributes["endDate"], "%Y-%m-%d")
+            )  # type: ignore
         if attributes["volumeCount"]:
             result.volumes = attributes["volumeCount"]
         if attributes["chapterCount"]:
@@ -151,7 +155,9 @@ class KitsuProvider(Provider):
                     return True
         if url_prop in potential_ref:
             for claim in potential_ref[url_prop]:
-                if re.search(rf"https://kitsu\.io/manga/{id}", claim.getTarget().lower()):  # type: ignore
+                if re.search(
+                    rf"https://kitsu\.io/manga/{id}", claim.getTarget().lower()
+                ):  # type: ignore
                     return True
         if kitsu_prop in potential_ref:
             for claim in potential_ref[kitsu_prop]:

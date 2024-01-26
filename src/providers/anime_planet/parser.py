@@ -30,7 +30,11 @@ def get_data(manga_id: str) -> ParserResult:
     section = soup.find(attrs={"id": "siteContainer"}).find("section")
     assert section is not None
     divs: List[Tag] = section.find_all("div", recursive=False)
-    vol_and_chap_info, magazine_info, year_info, = (
+    (
+        vol_and_chap_info,
+        magazine_info,
+        year_info,
+    ) = (
         divs[0],
         divs[1],
         divs[2],
