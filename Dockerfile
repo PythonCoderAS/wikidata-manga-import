@@ -3,7 +3,7 @@ FROM python:3.12-alpine AS generate-venv
 WORKDIR /app
 COPY Pipfile Pipfile.lock ./
 RUN ["pip", "install", "pipenv"]
-RUN ["sh", "-c", "pipenv requirements --dev > requirements.txt"]
+RUN ["sh", "-c", "pipenv requirements > requirements.txt"]
 RUN ["python3", "-m", "venv", "/venv"]
 ENV PATH="/venv/bin:$PATH"
 RUN ["python3", "-m", "pip", "install", "-r", "requirements.txt"]
