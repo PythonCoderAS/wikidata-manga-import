@@ -9,8 +9,13 @@ beautifulsoup4 = "*"
 wikidata-bot-framework = "*"
 
 [dev-packages]
-black = "*"
-isort = "*"
+ruff = "*"
+
+[scripts]
+lint = "ruff check . --fix"
+lint-ci = "ruff check ."
+format = "ruff format ."
+format-ci = "ruff format . --check"
 
 [requires]
 python_version = "3.12"

@@ -1,7 +1,5 @@
 import datetime
-import logging
 import re
-import time
 from typing import Union
 
 import pywikibot

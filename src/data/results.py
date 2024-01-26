@@ -37,7 +37,7 @@ from ..constants import (
     volume_item,
 )
 from .bad_data import BadDataReport
-from .extra_property import ExtraProperty, ExtraQualifier
+from wikidata_bot_framework import ExtraProperty, ExtraQualifier
 from .link import Link
 from .smart_precision_time import SmartPrecisionTime
 

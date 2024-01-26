@@ -1,4 +1,3 @@
-import datetime
 import re
 from typing import Union
 
@@ -22,7 +21,6 @@ from ..constants import (
     english_lang_item,
     japan_item,
     japanese_lang_item,
-    kitsu_item,
     kitsu_prop,
     korea_item,
     korean_lang_item,
@@ -39,7 +37,7 @@ from ..constants import (
 )
 from ..exceptions import AbortError
 from ..data.bad_data import BadDataReport
-from ..data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
+from wikidata_bot_framework import ExtraProperty, ExtraQualifier, ExtraReference
 from ..data.link import Link
 from ..data.reference import Reference
 from ..data.results import Result

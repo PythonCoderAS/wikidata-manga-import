@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import time
-from typing import Any, Literal, Union, overload
+from typing import Any, Literal, Union
 
 from requests import Response
 import requests

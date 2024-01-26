@@ -22,7 +22,7 @@ from ..constants import (
     title_prop,
     url_prop,
 )
-from ..data.extra_property import ExtraProperty
+from wikidata_bot_framework import ExtraProperty
 from ..data.link import Link
 from ..data.reference import Reference
 from ..data.results import Result

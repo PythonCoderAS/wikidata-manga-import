@@ -24,13 +24,11 @@ from .constants import (
     url_prop,
 )
 from .data.bad_data import BadDataReport
-from .data.extra_property import ExtraProperty, ExtraQualifier, ExtraReference
-from .data.provider_results import ProviderResults
+from wikidata_bot_framework import ExtraProperty, ExtraQualifier, ExtraReference
 from .data.reference import Reference
 from .data.results import Result
 from .exceptions import NotFoundException
 from .providers import providers
-from .pywikibot_stub_types import WikidataReference
 
 
 class MangaImportBot(PropertyAdderBot):
