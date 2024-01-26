@@ -6,7 +6,7 @@ from requests import Response
 import requests
 from wikidata_bot_framework import EntityPage, Output
 
-from ..constants import session as requests_session
+from ..constants import session as requests_session, spoofed_chrome_user_agent
 from ..data.reference import Reference
 from ..data.results import Result
 from ..exceptions import NotFoundException
@@ -121,10 +121,14 @@ class Provider(ABC):
         on_retry_limit_exhuasted_json_exception: Literal[
             "raise", "return_none"
         ] = "return_none",
+        use_spoofed_user_agent: bool = False,
         **kwargs,
     ) -> tuple[Union[requests.Response, None], Union[_JSONType, None]]:
+        headers = {}
+        if use_spoofed_user_agent:
+            headers = {"User-Agent": spoofed_chrome_user_agent}
         try:
-            r = self.session.request(method, url, **kwargs)
+            r = self.session.request(method, url, headers=headers, **kwargs)
         except retry_on_exceptions:
             if retries == 0:
                 if on_retry_limit_exhaused_exception == "return_none":
@@ -148,6 +152,7 @@ class Provider(ABC):
                     return_json=return_json,
                     retry_on_json_exceptions=retry_on_json_exceptions,
                     on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
+                    use_spoofed_user_agent=use_spoofed_user_agent,
                     **kwargs,
                 )
         status = r.status_code
@@ -176,6 +181,7 @@ class Provider(ABC):
                     return_json=return_json,
                     retry_on_json_exceptions=retry_on_json_exceptions,
                     on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
+                    use_spoofed_user_agent=use_spoofed_user_agent,
                     **kwargs,
                 )
         elif not_found_on_request_404 and status == 404:
@@ -205,6 +211,7 @@ class Provider(ABC):
                     return_json=return_json,
                     retry_on_json_exceptions=retry_on_json_exceptions,
                     on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
+                    use_spoofed_user_agent=use_spoofed_user_agent,
                     **kwargs,
                 )
         elif status // 100 > 3:
@@ -240,6 +247,7 @@ class Provider(ABC):
                         return_json=return_json,
                         retry_on_json_exceptions=retry_on_json_exceptions,
                         on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
+                        use_spoofed_user_agent=use_spoofed_user_agent,
                         **kwargs,
                     )
         else:

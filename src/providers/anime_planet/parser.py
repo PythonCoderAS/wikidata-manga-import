@@ -20,6 +20,7 @@ def get_data(manga_id: str) -> ParserResult:
         f"{base_url}/{manga_id}",
         on_retry_limit_exhaused_exception="raise",
         return_json=False,
+        use_spoofed_user_agent=True,
     )
     if r is None:
         return ParserResult()

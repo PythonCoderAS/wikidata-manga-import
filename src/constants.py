@@ -1,3 +1,4 @@
+import datetime
 import enum
 import re
 from typing import Union
@@ -184,3 +185,16 @@ session.headers[
 ] = "AniMangaDBImportBot/Wikidata (https://wikidata.org/wiki/User:AniMangaDBImportBot) (abuse: https://wikidata.org/wiki/User_talk:RPI2026F1)"
 
 bad_import_page = pywikibot.Page(site, "User:RPI2026F1Bot/Task1/Import errors")
+
+spoofed_chrome_epoch = datetime.date(2023, 1, 30)
+spoofed_chrome_epoch_version = 121
+
+major = (
+    spoofed_chrome_epoch_version
+    + max(
+        (datetime.date.today() - spoofed_chrome_epoch).days // 40 - 1,
+        0,  # Chrome major versions go up by 1 roughly every month. We'll stay 1-2 versions below just in case they wait more than a month to update.
+    )
+)
+
+spoofed_chrome_user_agent = f"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{major}.0.0.0 Safari/537.36"
