@@ -246,7 +246,7 @@
                 "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926",
                 "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==1.16.0"
         },
         "soupsieve": {
@@ -283,12 +283,12 @@
         },
         "wikidata-bot-framework": {
             "hashes": [
-                "sha256:3ddc22b57cc2d7fe78651d42d8587a622aaa5b6e412a0f0b98b2341eacf8d7ca",
-                "sha256:b24b0547ad16650b781d51d7db830de417038a9c92a54c51d1c5b79090167bd5"
+                "sha256:310b974b5f803c059ab1a0673b6b0bd1434c1cac293a930d980870274d884ebb",
+                "sha256:dc252682a0d29c51e79aab5e86e162dc909d466a08745b10a602dc08e0e7fbdf"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==7.2.0"
+            "version": "==7.3.0"
         }
     },
     "develop": {
