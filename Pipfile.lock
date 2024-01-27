@@ -283,12 +283,12 @@
         },
         "wikidata-bot-framework": {
             "hashes": [
-                "sha256:310b974b5f803c059ab1a0673b6b0bd1434c1cac293a930d980870274d884ebb",
-                "sha256:dc252682a0d29c51e79aab5e86e162dc909d466a08745b10a602dc08e0e7fbdf"
+                "sha256:0df46fdc241dafd890dbe8c4585647536a4fabcba9296ff8dab6e3ed3f58dc53",
+                "sha256:2f51140a3e95e2b17cca6577b16b14a862401fe6851e446f6392af1f291b4b12"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==7.3.0"
+            "version": "==7.3.2"
         }
     },
     "develop": {

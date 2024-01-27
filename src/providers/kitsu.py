@@ -77,31 +77,33 @@ class KitsuProvider(Provider):
         246: Genres.isekai,
     }
 
+    def string_id_to_int_id(self, id: str) -> int | None:
+        url = f"{self.kitsu_base}/manga"
+        params = {
+            "fields[categories]": "id",
+            "filter[slug]": id,
+            "page[limit]": 1,
+            "page[offset]": 0,
+            "include": "categories",
+        }
+        r, data = self.do_request_with_retries("GET", url, params=params)
+        if r is None or data is None:
+            return None
+        assert isinstance(data, dict)
+        if data["meta"]["count"] == 0:
+            raise NotFoundException(r)
+        elif data["meta"]["count"] != 1:
+            raise ValueError(
+                f"Multiple results found, this should not be happening. Input slug: {id}"
+            )
+        actual_data = data["data"][0]
+        return int(actual_data["id"])
+
     def get(self, id: str, _) -> Result:
-        non_numeric = False
-        if not id.isnumeric():
-            non_numeric = True
+        print(id)
+        non_numeric = not id.isnumeric()
         if non_numeric:
-            url = f"{self.kitsu_base}/manga"
-            params = {
-                "fields[categories]": "id",
-                "filter[slug]": id,
-                "page[limit]": 1,
-                "page[offset]": 0,
-                "include": "categories",
-            }
-            r, data = self.do_request_with_retries("GET", url, params=params)
-            if r is None or data is None:
-                return Result()
-            assert isinstance(data, dict)
-            if data["meta"]["count"] == 0:
-                raise NotFoundException(r)
-            elif data["meta"]["count"] != 1:
-                raise ValueError(
-                    f"Multiple results found, this should not be happening. Input slug: {id}"
-                )
-            actual_data = data["data"][0]
-            id = actual_data["id"]
+            id = str(self.string_id_to_int_id(id))
         else:
             url = f"{self.kitsu_base}/manga/{id}"
             params = {"fields[categories]": "id", "include": "categories"}
@@ -140,10 +142,64 @@ class KitsuProvider(Provider):
 
     def post_process_hook(self, output: Output, item: EntityPage) -> bool:
         edited = False
+        id_mapping: dict[str, int] = {}
         for claim in item.claims.get(self.prop, []).copy():
+            claim: pywikibot.Claim
             if not claim.getTarget().isnumeric():
-                item.claims[self.prop].remove(claim)
-                edited = True
+                existing_int_id = id_mapping.get(claim.getTarget(), None)
+                if existing_int_id is None:
+                    int_id = self.string_id_to_int_id(claim.getTarget())
+                    if int_id is None:
+                        raise NotFoundException()
+                    else:
+                        id_mapping[claim.getTarget()] = int_id
+                else:
+                    int_id = existing_int_id
+                for other_claims in item.claims.get(
+                    self.prop, []
+                ).copy():  # We're checking that the int ID doesn't already exist in another claim for the property
+                    if other_claims.getTarget() == int_id:
+                        item.claims[self.prop].remove(claim)
+                        edited = True
+                        break
+                else:
+                    claim.setTarget(str(int_id))
+                    edited = True
+        for claim_list in item.claims.values():
+            for claim in claim_list:
+                for reference_set in claim.sources:
+                    for (
+                        reference_property_id,
+                        reference_claim_list,
+                    ) in reference_set.items():
+                        if reference_property_id == self.prop:
+                            for reference_claim in reference_claim_list.copy():
+                                reference_claim: pywikibot.Claim
+                                if not reference_claim.getTarget().isnumeric():
+                                    existing_int_id = id_mapping.get(
+                                        reference_claim.getTarget(), None
+                                    )
+                                    if existing_int_id is None:
+                                        int_id = self.string_id_to_int_id(
+                                            reference_claim.getTarget()
+                                        )
+                                        if int_id is None:
+                                            raise NotFoundException()
+                                        else:
+                                            id_mapping[
+                                                reference_claim.getTarget()
+                                            ] = int_id
+                                    else:
+                                        int_id = existing_int_id
+                                    for other_claims in reference_claim_list:
+                                        if other_claims.getTarget() == int_id:
+                                            reference_claim_list.remove(reference_claim)
+                                            edited = True
+                                            break
+                                    else:
+                                        reference_claim.setTarget(str(int_id))
+                                        edited = True
+
         return edited
 
     def compute_similar_reference(

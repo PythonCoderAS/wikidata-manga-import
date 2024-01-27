@@ -38,7 +38,7 @@ def act_on_item_string(
 
 def main(argv=None):
     bot = MangaImportBot()
-    args = parser.parse_args(argv)
+    args = parser.parse_args()
     if args.automatic:
         bot.set_hash(get_random_hex())
         if args.input_file is not None or args.item is not None:
