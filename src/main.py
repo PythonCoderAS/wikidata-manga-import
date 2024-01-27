@@ -167,6 +167,3 @@ class MangaImportBot(PropertyAdderBot):
             edits_made = True
             item.get(force=True)
         return edits_made
-
-    def post_edit_process_hook(self, output: Output, item: EntityPage) -> None:
-        raise Exception
