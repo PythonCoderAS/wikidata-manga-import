@@ -1,0 +1,13 @@
+{
+  "name": "prettier-user-project",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Project only consuming prettier for formatting",
+  "scripts": {
+    "lint": "prettier --write .",
+    "lint:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.2.4"
+  }
+}

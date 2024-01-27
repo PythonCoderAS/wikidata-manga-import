@@ -10,6 +10,7 @@ wikidata-bot-framework = "*"
 
 [dev-packages]
 ruff = "*"
+pre-commit = "*"
 
 [scripts]
 lint = "ruff check . --fix"

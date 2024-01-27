@@ -1,4 +1,4 @@
-name: Lint
+name: Simple Test
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: ["master"]
 
 jobs:
-  lint:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,7 +25,7 @@ jobs:
           pip install pipenv
 
       - name: Install dependencies
-        run: pipenv sync --dev
+        run: pipenv sync
 
-      - name: Lint
-        run: pipenv run lint-ci
+      - name: Test help works
+        run: pipenv run python run.py --help
