@@ -100,7 +100,6 @@ class KitsuProvider(Provider):
         return int(actual_data["id"])
 
     def get(self, id: str, _) -> Result:
-        print(id)
         non_numeric = not id.isnumeric()
         if non_numeric:
             id = str(self.string_id_to_int_id(id))
@@ -158,7 +157,7 @@ class KitsuProvider(Provider):
                 for other_claims in item.claims.get(
                     self.prop, []
                 ).copy():  # We're checking that the int ID doesn't already exist in another claim for the property
-                    if other_claims.getTarget() == int_id:
+                    if other_claims.getTarget() == str(int_id):
                         item.claims[self.prop].remove(claim)
                         edited = True
                         break
@@ -192,7 +191,7 @@ class KitsuProvider(Provider):
                                     else:
                                         int_id = existing_int_id
                                     for other_claims in reference_claim_list:
-                                        if other_claims.getTarget() == int_id:
+                                        if other_claims.getTarget() == str(int_id):
                                             reference_claim_list.remove(reference_claim)
                                             edited = True
                                             break

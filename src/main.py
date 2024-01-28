@@ -163,7 +163,11 @@ class MangaImportBot(PropertyAdderBot):
 
     def act_on_item(self, item: EntityPage) -> bool:
         edits_made = False
-        while super().act_on_item(item):
+        second_last_revid = None
+        last_revid = item.latest_revision_id
+        while super().act_on_item(item) and last_revid != second_last_revid:
             edits_made = True
             item.get(force=True)
+            second_last_revid = last_revid
+            last_revid = item.latest_revision_id
         return edits_made
