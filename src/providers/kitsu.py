@@ -103,16 +103,15 @@ class KitsuProvider(Provider):
         non_numeric = not id.isnumeric()
         if non_numeric:
             id = str(self.string_id_to_int_id(id))
-        else:
-            url = f"{self.kitsu_base}/manga/{id}"
-            params = {"fields[categories]": "id", "include": "categories"}
-            r, data = self.do_request_with_retries(
-                "GET", url, params=params, not_found_on_request_404=True
-            )
-            if r is None or data is None:
-                return Result()
-            assert isinstance(data, dict)
-            actual_data = data["data"]
+        url = f"{self.kitsu_base}/manga/{id}"
+        params = {"fields[categories]": "id", "include": "categories"}
+        r, data = self.do_request_with_retries(
+            "GET", url, params=params, not_found_on_request_404=True
+        )
+        if r is None or data is None:
+            return Result()
+        assert isinstance(data, dict)
+        actual_data = data["data"]
         if "included" in data:
             categories = [int(item["id"]) for item in data["included"]]
         else:
