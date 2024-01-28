@@ -136,9 +136,10 @@ class MALProvider(Provider):
                 result.demographics.append(
                     self.demographic_mapping[demographic["mal_id"]]
                 )
-        for external_item in data["external"]:
-            if external_item["name"] != "Wikipedia":
-                result.links.append(Link(external_item["url"]))
+        if data["external"]:
+            for external_item in data["external"]:
+                if external_item["name"] != "Wikipedia":
+                    result.links.append(Link(external_item["url"]))
         return result
 
     def compute_similar_reference(
