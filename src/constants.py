@@ -1,10 +1,13 @@
 import datetime
 import enum
 import re
-from typing import Union
+import time
+from typing import MutableMapping, Union
 
 import pywikibot
+import requests
 from requests_cache import CachedSession
+import urllib.parse
 from wikidata_bot_framework import site
 
 # Constants for ids of properties that may be created
@@ -179,7 +182,45 @@ language_item_to_code_map = {
     chinese_lang_item: "zh",
 }
 
-session = CachedSession(backend="memory")
+
+class RatelimitSession(requests.Session):
+    ratelimit_by_host: dict[str, float] = {"graphql.anilist.co": 1}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.last_request_by_host: dict[str, int] = {}
+
+    def request(
+        self,
+        method: str,
+        url: str,
+        *args,
+        headers: MutableMapping[str, str] | None = None,
+        **kwargs,
+    ):
+        parsed = urllib.parse.urlparse(url)
+        host = parsed.hostname
+        if host in self.ratelimit_by_host:
+            if host in self.last_request_by_host:
+                last_request = self.last_request_by_host[host]
+                if (
+                    last_request + self.ratelimit_by_host[host]
+                    > datetime.datetime.now().timestamp()
+                ):
+                    time.sleep(
+                        last_request
+                        + self.ratelimit_by_host[host]
+                        - datetime.datetime.now().timestamp()
+                    )
+            self.last_request_by_host[host] = datetime.datetime.now().timestamp()
+        return super().request(method, url, *args, headers=headers, **kwargs)
+
+
+class RatelimitCachedSession(CachedSession, RatelimitSession):
+    pass
+
+
+session = RatelimitCachedSession(backend="memory")
 session.headers[
     "user-agent"
 ] = "AniMangaDBImportBot/Wikidata (https://wikidata.org/wiki/User:AniMangaDBImportBot) (abuse: https://wikidata.org/wiki/User_talk:RPI2026F1)"
