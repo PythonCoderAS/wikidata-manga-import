@@ -143,6 +143,8 @@ class AnilistProvider(Provider):
             self.anilist_base,
             json={"query": self.query, "variables": {"id": id}},
             not_found_on_request_404=True,
+            retry_on_status_codes=(429,),
+            use_exponential_backoff=True,
         )
         if r is None or json is None:
             return Result()

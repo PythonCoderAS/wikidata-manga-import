@@ -97,6 +97,7 @@ class Provider(ABC):
         self,
         method: str,
         url: str,
+        *,
         retries: int = 3,
         sleep_time_between_retries: float = 5,
         retry_on_status_codes: tuple[int, ...] = tuple(),
@@ -122,11 +123,36 @@ class Provider(ABC):
             "raise", "return_none"
         ] = "return_none",
         use_spoofed_user_agent: bool = False,
+        use_exponential_backoff: bool = False,
         **kwargs,
     ) -> tuple[Union[requests.Response, None], Union[_JSONType, None]]:
         headers = {}
         if use_spoofed_user_agent:
             headers = {"User-Agent": spoofed_chrome_user_agent}
+        recursive_kwargs = dict(
+            method=method,
+            url=url,
+            retries=retries - 1,
+            sleep_time_between_retries=sleep_time_between_retries,
+            retry_on_status_codes=retry_on_status_codes,
+            retry_on_status_code_range=retry_on_status_code_range,
+            retry_on_exceptions=retry_on_exceptions,
+            on_retry_limit_exhuasted_status_code=on_retry_limit_exhuasted_status_code,
+            on_other_bad_status_code=on_other_bad_status_code,
+            not_found_on_request_404=not_found_on_request_404,
+            on_retry_limit_exhaused_exception=on_retry_limit_exhaused_exception,
+            return_json=return_json,
+            retry_on_json_exceptions=retry_on_json_exceptions,
+            on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
+            use_spoofed_user_agent=use_spoofed_user_agent,
+            use_exponential_backoff=use_exponential_backoff,
+            **kwargs,
+        )
+        true_sleep_time = (
+            sleep_time_between_retries * pow(2, 3 - retries)
+            if use_exponential_backoff
+            else sleep_time_between_retries
+        )
         try:
             r = self.session.request(method, url, headers=headers, **kwargs)
         except retry_on_exceptions:
@@ -136,25 +162,8 @@ class Provider(ABC):
                 elif on_retry_limit_exhaused_exception == "raise":
                     raise
             else:
-                time.sleep(sleep_time_between_retries)
-                return self.do_request_with_retries(
-                    method,
-                    url,
-                    retries=retries - 1,
-                    sleep_time_between_retries=sleep_time_between_retries,
-                    retry_on_status_codes=retry_on_status_codes,
-                    retry_on_status_code_range=retry_on_status_code_range,
-                    retry_on_exceptions=retry_on_exceptions,
-                    on_retry_limit_exhuasted_status_code=on_retry_limit_exhuasted_status_code,
-                    on_other_bad_status_code=on_other_bad_status_code,
-                    not_found_on_request_404=not_found_on_request_404,
-                    on_retry_limit_exhaused_exception=on_retry_limit_exhaused_exception,
-                    return_json=return_json,
-                    retry_on_json_exceptions=retry_on_json_exceptions,
-                    on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
-                    use_spoofed_user_agent=use_spoofed_user_agent,
-                    **kwargs,
-                )
+                time.sleep(true_sleep_time)
+                return self.do_request_with_retries(**recursive_kwargs)
         status = r.status_code
         if status in retry_on_status_codes:
             if retries == 0:
@@ -165,25 +174,8 @@ class Provider(ABC):
                 elif on_retry_limit_exhuasted_status_code == "ignore":
                     pass
             else:
-                time.sleep(sleep_time_between_retries)
-                return self.do_request_with_retries(
-                    method,
-                    url,
-                    retries=retries - 1,
-                    sleep_time_between_retries=sleep_time_between_retries,
-                    retry_on_status_codes=retry_on_status_codes,
-                    retry_on_status_code_range=retry_on_status_code_range,
-                    retry_on_exceptions=retry_on_exceptions,
-                    on_retry_limit_exhuasted_status_code=on_retry_limit_exhuasted_status_code,
-                    on_other_bad_status_code=on_other_bad_status_code,
-                    not_found_on_request_404=not_found_on_request_404,
-                    on_retry_limit_exhaused_exception=on_retry_limit_exhaused_exception,
-                    return_json=return_json,
-                    retry_on_json_exceptions=retry_on_json_exceptions,
-                    on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
-                    use_spoofed_user_agent=use_spoofed_user_agent,
-                    **kwargs,
-                )
+                time.sleep(true_sleep_time)
+                return self.do_request_with_retries(**recursive_kwargs)
         elif not_found_on_request_404 and status == 404:
             raise NotFoundException(r)
         elif status // 100 in retry_on_status_code_range:
@@ -195,25 +187,8 @@ class Provider(ABC):
                 elif on_retry_limit_exhuasted_status_code == "ignore":
                     pass
             else:
-                time.sleep(sleep_time_between_retries)
-                return self.do_request_with_retries(
-                    method,
-                    url,
-                    retries=retries - 1,
-                    sleep_time_between_retries=sleep_time_between_retries,
-                    retry_on_status_codes=retry_on_status_codes,
-                    retry_on_status_code_range=retry_on_status_code_range,
-                    retry_on_exceptions=retry_on_exceptions,
-                    on_retry_limit_exhuasted_status_code=on_retry_limit_exhuasted_status_code,
-                    on_other_bad_status_code=on_other_bad_status_code,
-                    not_found_on_request_404=not_found_on_request_404,
-                    on_retry_limit_exhaused_exception=on_retry_limit_exhaused_exception,
-                    return_json=return_json,
-                    retry_on_json_exceptions=retry_on_json_exceptions,
-                    on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
-                    use_spoofed_user_agent=use_spoofed_user_agent,
-                    **kwargs,
-                )
+                time.sleep(true_sleep_time)
+                return self.do_request_with_retries(**recursive_kwargs)
         elif status // 100 > 3:
             if on_other_bad_status_code == "return_none":
                 return None, None
@@ -231,24 +206,7 @@ class Provider(ABC):
                     elif on_retry_limit_exhuasted_json_exception == "raise":
                         raise
                 else:
-                    time.sleep(sleep_time_between_retries)
-                    return self.do_request_with_retries(
-                        method,
-                        url,
-                        retries=retries - 1,
-                        sleep_time_between_retries=sleep_time_between_retries,
-                        retry_on_status_codes=retry_on_status_codes,
-                        retry_on_status_code_range=retry_on_status_code_range,
-                        retry_on_exceptions=retry_on_exceptions,
-                        on_retry_limit_exhuasted_status_code=on_retry_limit_exhuasted_status_code,
-                        on_other_bad_status_code=on_other_bad_status_code,
-                        not_found_on_request_404=not_found_on_request_404,
-                        on_retry_limit_exhaused_exception=on_retry_limit_exhaused_exception,
-                        return_json=return_json,
-                        retry_on_json_exceptions=retry_on_json_exceptions,
-                        on_retry_limit_exhuasted_json_exception=on_retry_limit_exhuasted_json_exception,
-                        use_spoofed_user_agent=use_spoofed_user_agent,
-                        **kwargs,
-                    )
+                    time.sleep(true_sleep_time)
+                    return self.do_request_with_retries(**recursive_kwargs)
         else:
             return r, None
