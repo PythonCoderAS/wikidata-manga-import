@@ -184,7 +184,7 @@ language_item_to_code_map = {
 
 
 class RatelimitSession(requests.Session):
-    ratelimit_by_host: dict[str, float] = {"graphql.anilist.co": 1}
+    ratelimit_by_host: dict[str, float] = {"graphql.anilist.co": 2}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -207,11 +207,12 @@ class RatelimitSession(requests.Session):
                     last_request + self.ratelimit_by_host[host]
                     > datetime.datetime.now().timestamp()
                 ):
-                    time.sleep(
+                    sleep_secs = (
                         last_request
                         + self.ratelimit_by_host[host]
                         - datetime.datetime.now().timestamp()
                     )
+                    time.sleep(sleep_secs)
             self.last_request_by_host[host] = datetime.datetime.now().timestamp()
         return super().request(method, url, *args, headers=headers, **kwargs)
 
