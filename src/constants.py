@@ -184,7 +184,7 @@ language_item_to_code_map = {
 
 
 class RatelimitSession(requests.Session):
-    ratelimit_by_host: dict[str, float] = {"graphql.anilist.co": 2}
+    ratelimit_by_host: dict[str, float] = {"graphql.anilist.co": 2, "api.jikan.moe": 1}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
