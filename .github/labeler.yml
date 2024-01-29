@@ -1,0 +1,62 @@
+dependencies:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "Pipfile*"
+          - any-glob-to-any-file: "package*.json"
+
+documentation:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "README*"
+          - any-glob-to-any-file: "docs/**/*"
+
+src/abc:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "src/abc/**/*.py"
+
+providers/myanimelist:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "src/providers/mal.py"
+
+providers/anilist:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "src/providers/anilist.py"
+
+providers/kitsu:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "src/providers/kitsu.py"
+
+providers/mangadex:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "src/providers/md.py"
+
+providers/mangaupdates:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "src/providers/mu.py"
+
+providers/anime-planet:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "src/providers/anime_planet/**/*.py"
+
+providers/inkr:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "src/providers/inkr/**/*.py"
+
+workflows:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: ".github/workflows/*.yml"
+
+docker:
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "Dockerfile*"
+          - any-glob-to-any-file: "docker-compose.yml"
