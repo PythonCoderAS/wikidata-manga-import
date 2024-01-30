@@ -129,6 +129,10 @@ class Provider(ABC):
         headers = {}
         if use_spoofed_user_agent:
             headers = {"User-Agent": spoofed_chrome_user_agent}
+        if "headers" in kwargs:
+            headers.update(kwargs["headers"])
+        else:
+            kwargs["headers"] = headers
         recursive_kwargs = dict(
             method=method,
             url=url,
@@ -154,7 +158,7 @@ class Provider(ABC):
             else sleep_time_between_retries
         )
         try:
-            r = self.session.request(method, url, headers=headers, **kwargs)
+            r = self.session.request(method, url, **kwargs)
         except retry_on_exceptions:
             if retries == 0:
                 if on_retry_limit_exhaused_exception == "return_none":
