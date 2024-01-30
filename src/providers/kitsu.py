@@ -1,6 +1,13 @@
+import datetime
+import os
 import re
 
 import pywikibot
+from requests.exceptions import (
+    ConnectionError as ConnectionError,
+    JSONDecodeError as JSONDecodeError,
+)
+from requests.models import Response as Response
 from wikidata_bot_framework import EntityPage, Output
 
 from ..abc.provider import Provider
@@ -76,6 +83,24 @@ class KitsuProvider(Provider):
         245: Demographics.josei,
         246: Genres.isekai,
     }
+
+    @staticmethod
+    def get_kitsu_headers() -> dict[str, str]:
+        headers = {}
+        current_timestamp = datetime.datetime.now(tz=datetime.timezone.utc).timestamp()
+        if (access_token := os.environ.get("KITSU_ACCESS_TOKEN", None)) and int(
+            os.environ.get("KITSU_EXPIRES_AT", 0)
+        ) > current_timestamp:
+            headers["Authorization"] = f"Bearer {access_token}"
+        return headers
+
+    def do_request_with_retries(self, *args, **kwargs):
+        headers = self.get_kitsu_headers()
+        if headers and "headers" not in kwargs:
+            kwargs["headers"] = headers
+        else:
+            kwargs["headers"].update(headers)
+        return super().do_request_with_retries(*args, **kwargs)
 
     def string_id_to_int_id(self, id: str) -> int | None:
         url = f"{self.kitsu_base}/manga"
