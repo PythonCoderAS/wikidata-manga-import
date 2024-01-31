@@ -59,6 +59,8 @@ class Result:
 
     bad_data_reports: list[BadDataReport] = dataclasses.field(default_factory=list)
 
+    new_id: str | None = None  # Sets a new ID for use by references
+
     def simplify(self):
         """Simplify the self to only have values in the other properties."""
         if self.genres:

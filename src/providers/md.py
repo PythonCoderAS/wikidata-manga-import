@@ -9,13 +9,11 @@ from ..constants import (
     Demographics,
     Genres,
     anilist_id_prop,
-    anime_planet_item,
     anime_planet_prop,
     bookwalker_prop,
     china_item,
     chinese_lang_item,
     country_prop,
-    deprecated_reason_prop,
     ebookjapan_prop,
     ebookjapan_regex,
     english_lang_item,
@@ -30,19 +28,17 @@ from ..constants import (
     md_item,
     mu_id_prop,
     mu_item,
-    redirect_item,
     site,
     stated_at_prop,
     url_prop,
 )
 from ..exceptions import AbortError
 from ..data.bad_data import BadDataReport
-from wikidata_bot_framework import ExtraProperty, ExtraQualifier, ExtraReference
+from wikidata_bot_framework import ExtraProperty, ExtraReference
 from ..data.link import Link
 from ..data.reference import Reference
 from ..data.results import Result
 from ..pywikibot_stub_types import WikidataReference
-from .anime_planet.parser import base_url
 
 
 class MangadexProvider(Provider):
@@ -101,7 +97,6 @@ class MangadexProvider(Provider):
     }
 
     mu_new_url_regex = re.compile(r"https://www\.mangaupdates\.com/series/([0-9a-z]+)")
-    ap_new_url_regex = re.compile(rf"{base_url}/([a-z\d-]+)", re.IGNORECASE)
     bw_regex_md = re.compile(r"series/(\d+)")
 
     def get(self, id: str, _) -> Result:
@@ -183,69 +178,7 @@ class MangadexProvider(Provider):
                 claim = pywikibot.Claim(site, anime_planet_prop)
                 extra_prop = ExtraProperty(claim=claim)
                 result.other_properties[anime_planet_prop].append(extra_prop)
-                try:
-                    r, _ = self.do_request_with_retries(
-                        "GET",
-                        f"{base_url}/{ap_id}",
-                        on_other_bad_status_code="ignore",
-                        on_retry_limit_exhaused_exception="raise",
-                        return_json=False,
-                    )
-                    if r is None:
-                        raise AbortError()
-                    if r.status_code == 404:
-                        data = {"ap_id": ap_id, "history": []}
-                        report = BadDataReport(
-                            self, id, "Anime-Planet ID not found", data
-                        )
-                        if r.history:
-                            data["history"] = [h.url for h in r.history]
-                        result.bad_data_reports.append(report)
-                        raise AbortError()
-                    else:
-                        r.raise_for_status()
-                    new_id = self.ap_new_url_regex.search(r.url).group(1)  # type: ignore
-                    claim.setTarget(new_id)
-                    for i, item in enumerate(r.history):
-                        for extra_property in result.other_properties[
-                            anime_planet_prop
-                        ][: i + 1]:
-                            extra_ref = ExtraReference(
-                                url_match_pattern=self.ap_new_url_regex
-                            )
-                            ap_check_claim = pywikibot.Claim(site, stated_at_prop)
-                            ap_check_claim.setTarget(anime_planet_item)
-                            extra_ref.match_property_values[
-                                stated_at_prop
-                            ] = extra_ref.new_reference_props[
-                                stated_at_prop
-                            ] = ap_check_claim
-                            url_ref_claim = pywikibot.Claim(site, url_prop)
-                            url_ref_claim.setTarget(item.url)
-                            extra_ref.new_reference_props[url_prop] = url_ref_claim
-                            extra_property.extra_references.append(extra_ref)
-                        if match := self.ap_new_url_regex.search(item.url):
-                            redirect_claim = pywikibot.Claim(site, anime_planet_prop)
-                            redirect_claim.setTarget(match.group(1))
-                            redirect_claim.setRank("deprecated")
-                            redirect_extra_prop = ExtraProperty(claim=redirect_claim)
-                            deprecated_claim = pywikibot.Claim(
-                                site, deprecated_reason_prop
-                            )
-                            deprecated_claim.setTarget(redirect_item)
-                            redirect_extra_prop.qualifiers[
-                                deprecated_reason_prop
-                            ].append(ExtraQualifier(claim=deprecated_claim))
-                            result.other_properties[anime_planet_prop].append(
-                                redirect_extra_prop
-                            )
-                except (
-                    requests.HTTPError,
-                    requests.ConnectionError,
-                    UnicodeDecodeError,
-                    AbortError,
-                ):
-                    claim.setTarget(ap_id)
+                claim.setTarget(ap_id)
             mu_id: Union[str, None] = data["links"].get("mu", None)
             if mu_id:
                 if mu_id.isnumeric():

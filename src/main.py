@@ -12,6 +12,7 @@ from wikidata_bot_framework import (
     report_exception,
     start_span,
 )
+from wikidata_fast_query import ItemContainer, SingleClaimContainer
 
 from .abc.provider import Provider
 from .constants import (
@@ -72,7 +73,7 @@ class MangaImportBot(PropertyAdderBot):
                 continue
             with start_span(
                 op="provider_values",
-                description=f"Getting al data from provider {provider.name}",
+                description=f"Getting all data from provider {provider.name}",
             ):
                 for value in item.claims[provider_property]:
                     if value.getRank() == "deprecated":
@@ -106,6 +107,8 @@ class MangaImportBot(PropertyAdderBot):
                             report_exception(e)
                             continue
                         result.simplify()
+                        old_provider_id = provider_id  # noqa: F841 -- Keep a reference to the old provider ID just in case
+                        provider_id = result.new_id or provider_id
                         if result.bad_data_reports:
                             bad_data_reports[provider] = result.bad_data_reports
                         reference = provider.get_reference(provider_id)
@@ -151,6 +154,83 @@ class MangaImportBot(PropertyAdderBot):
                     )
         return False
 
+    def move_qualifiers_from_deprecated_claims(self, item: EntityPage) -> bool:
+        container = ItemContainer(item)
+        acted = False
+        for provider_prop in providers.keys():
+            claims = container.claims(provider_prop)
+            if not claims:
+                continue
+            correct_claim: pywikibot.Claim | None = None
+            for claim_container in claims:
+                if claim_container.claim.getRank() == "deprecated":
+                    if not correct_claim:
+                        # We want to pick the right claim to move everything to.
+                        # We pick the preferred claim if it exists, or else we pick the normal claim.
+                        # If there are more than 1 preferred/normal claim, we throw an error
+                        # If there are more than 1 normal claim, and there is a preferred claim,
+                        # the bot will ignore the other normal claims.
+                        candidate_claims = [
+                            claim
+                            for claim in claims.claim_list
+                            if claim.getRank() != "deprecated"
+                        ]
+                        num_preferred = len(
+                            [
+                                claim
+                                for claim in candidate_claims
+                                if claim.getRank() == "preferred"
+                            ]
+                        )
+                        if num_preferred > 1:
+                            raise ValueError(
+                                f"More than one preferred claim found for property ${provider_prop} on item ${item.getID()}"
+                            )
+                        if num_preferred == 1:
+                            correct_claim = [
+                                claim
+                                for claim in candidate_claims
+                                if claim.getRank() == "preferred"
+                            ][0]
+                        elif len(candidate_claims) == 0:
+                            # Everything is deprecated, ?
+                            raise ValueError(
+                                f"Everything is deprecated for property ${provider_prop} on item ${item.getID()}"
+                            )
+                        else:
+                            # We pick the only normal claim (or throw an error if there are more than 1 normal claim)
+                            # If we didn't find any preferred claims, candidate_claims only contains normal claims
+                            if len(candidate_claims) > 1:
+                                raise ValueError(
+                                    f"More than one normal claim found for property ${provider_prop} on item ${item.getID()}"
+                                )
+                            correct_claim = candidate_claims[0]
+                    for (
+                        qualifier_prop,
+                        qualifier_values,
+                    ) in claim_container.qualifiers().items():
+                        if qualifier_prop == deprecated_reason_prop:
+                            continue
+                        correct_claim_container = SingleClaimContainer(correct_claim)
+                        # We only want to copy over new values for the qualifier
+                        existing_qualifier_claims = correct_claim.qualifiers.setdefault(
+                            qualifier_prop, []
+                        )
+                        existing_qualifier_values = correct_claim_container.qualifiers(
+                            qualifier_prop
+                        ).values()
+                        for (
+                            qualifier_claim,
+                            qualifier_value,
+                        ) in qualifier_values.claim_values():
+                            if qualifier_value not in existing_qualifier_values:
+                                existing_qualifier_claims.append(qualifier_claim)
+                                acted = True
+                        if claim_container.claim.qualifiers[qualifier_prop]:
+                            claim_container.claim.qualifiers[qualifier_prop] = []
+                            acted = True
+        return acted
+
     def post_output_process_hook(self, output: Output, item: EntityPage) -> bool:
         edits_made = False
         for provider in providers.values():
@@ -159,6 +239,10 @@ class MangaImportBot(PropertyAdderBot):
                 description=f"Running post-process hook for provider {provider.name}",
             ):
                 edits_made |= provider.post_process_hook(output, item)
+        try:
+            edits_made |= self.move_qualifiers_from_deprecated_claims(item)
+        except ValueError as e:
+            report_exception(e)
         return edits_made
 
     def act_on_item(self, item: EntityPage) -> bool:
