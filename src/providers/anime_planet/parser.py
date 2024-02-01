@@ -10,6 +10,7 @@ from . import ParserResult
 base_url = "https://www.anime-planet.com/manga"
 magazine_url_regex = re.compile(r"/manga/magazines/([a-z-]+)", re.IGNORECASE)
 tag_url_regex = re.compile(r"/manga/tags/([a-z-]+)", re.IGNORECASE)
+ap_new_url_regex = re.compile(rf"{base_url}/([a-z\d-]+)", re.IGNORECASE)
 
 
 def get_data(manga_id: str) -> ParserResult:
@@ -21,13 +22,22 @@ def get_data(manga_id: str) -> ParserResult:
         on_retry_limit_exhaused_exception="raise",
         return_json=False,
         use_spoofed_user_agent=True,
+        on_other_bad_status_code="ignore",
     )
     if r is None:
         return ParserResult()
-    if r.url != f"{base_url}/{manga_id}":
-        raise NotFoundException(r)
+    if r.status_code == 404:
+        data = {"ap_id": manga_id, "history": []}
+        if r.history:
+            data["history"] = [h.url for h in r.history]
+        raise NotFoundException(data)
+    else:
+        r.raise_for_status()
+    new_manga_id = ap_new_url_regex.search(r.url).group(1)
+    result = ParserResult(new_id=new_manga_id)
+    for item in r.history:
+        result.previous_ids.append(ap_new_url_regex.search(item.url).group(1))
     soup = BeautifulSoup(r.text, "html.parser")
-    result = ParserResult()
     section = soup.find(attrs={"id": "siteContainer"}).find("section")
     assert section is not None
     divs: List[Tag] = section.find_all("div", recursive=False)

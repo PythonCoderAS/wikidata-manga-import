@@ -14,7 +14,9 @@ from ...constants import (
 from ...data.reference import Reference
 from ...data.results import Result
 from ...pywikibot_stub_types import WikidataReference
-from .parser import base_url, get_data
+from .parser import base_url, get_data, ap_new_url_regex
+
+from wikidata_bot_framework import ExtraReference, site, ExtraProperty
 
 
 class AnimePlanetProvider(Provider):
@@ -69,6 +71,37 @@ class AnimePlanetProvider(Provider):
     def get(self, id: str, _) -> Result:
         data = get_data(id)
         res = Result()
+        if data.bad_data_report:
+            res.bad_data_reports.append(data.bad_data_report)
+            return res
+        if data.previous_urls and data.new_id:
+            res.new_id = data.new_id
+            # We want to store a list of references just in case a given URL is not a valid ID url.
+            previous_references = []
+            for url in data.previous_url:
+                id_match = ap_new_url_regex.search(url)
+                url_ref_claim = pywikibot.Claim(site, url_prop)
+                url_ref_claim.setTarget(url)
+                current_ref = ExtraReference()
+                current_ref.match_property_values[
+                    url_prop
+                ] = current_ref.new_reference_props[url_prop] = url_ref_claim
+                current_ref.new_reference_props[stated_at_prop] = anime_planet_item
+                previous_references.append(current_ref)
+                if id_match:
+                    old_id = id_match.group(1)
+                    id_claim = pywikibot.Claim(site, anime_planet_prop)
+                    id_claim.setTarget(old_id)
+                    id_claim.setRank("deprecated")
+                    id_claim_prop = ExtraProperty(id_claim)
+                    id_claim_prop.extra_references.extend(previous_references)
+                    res.extra_properties.append(id_claim_prop)
+            if previous_references:
+                new_id_prop = ExtraProperty.from_property_id_and_value(
+                    anime_planet_prop, data.new_id
+                )
+                new_id_prop.extra_references.extend(previous_references)
+                res.extra_properties.append(new_id_prop)
         if data.start_year:
             res.start_date = pywikibot.WbTime(year=data.start_year)
         if data.end_year:

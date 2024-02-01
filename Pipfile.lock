@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f897c219a97add03252349c4574aa962b2b7c6261f7810499baf0065761f3e93"
+            "sha256": "ee41b7cdc78c0eb34050946fa055d912fe49aa0b9bd651e17fa06b992c6c90ca"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -228,10 +228,10 @@
         },
         "sentry-sdk": {
             "hashes": [
-                "sha256:24c83b0b41c887d33328a9166f5950dc37ad58f01c9f2fbff6b87a6f1094170c",
-                "sha256:acaf597b30258fc7663063b291aa99e58f3096e91fe1e6634f4b79f9c1943e8e"
+                "sha256:34ad8cfc9b877aaa2a8eb86bfe5296a467fffe0619b931a05b181c45f6da59bf",
+                "sha256:78575620331186d32f34b7ece6edea97ce751f58df822547d3ab85517881a27a"
             ],
-            "version": "==1.39.2"
+            "version": "==1.40.0"
         },
         "setuptools": {
             "hashes": [
@@ -275,20 +275,29 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:55901e917a5896a349ff771be919f8bd99aff50b79fe58fec595eb37bbc56bb3",
-                "sha256:df7aa8afb0148fa78488e7899b2c59b5f4ffcfa82e6c54ccb9dd37c1d7b52d54"
+                "sha256:051d961ad0c62a94e50ecf1af379c3aba230c66c710493493560c0c223c49f20",
+                "sha256:ce3711610ddce217e6d113a2732fafad960a03fd0318c91faa79481e35c11224"
             ],
             "markers": "python_version >= '3.8'",
-            "version": "==2.1.0"
+            "version": "==2.2.0"
         },
         "wikidata-bot-framework": {
             "hashes": [
-                "sha256:07035468e8168b5ca55924d5776fd26bd4d7e0c9ef00012e032a35e9c5e3f556",
-                "sha256:35d37f8f0edcb82c921b0028dd4f205d703eec71e2924d13e720135f85c3731c"
+                "sha256:96802dea0d6eee1b6e626e231e06c5aa137858c7d7f82fe0ae69c5ad8a0c5564",
+                "sha256:b60ca40ccf17cd0f8bf265bbea4507d3a5b10d1f2a9d0914dc42ebbb9e855c1f"
             ],
             "index": "pypi",
             "markers": "python_version >= '3.9'",
-            "version": "==7.4.2"
+            "version": "==7.4.4"
+        },
+        "wikidata-fast-query": {
+            "hashes": [
+                "sha256:45db416a08c4305f060298b012df23e013309d8065e757225eed8833d889d85c",
+                "sha256:8118620289577fcd1e54ce368fc6e807bff2cb2f6d61492ca2f6519cc4a5155c"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.9'",
+            "version": "==2.3.0"
         }
     },
     "develop": {
