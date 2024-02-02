@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 requests-cache = "*"
 beautifulsoup4 = "*"
-wikidata-bot-framework = ">=7.4.0"
+wikidata-bot-framework = ">=7.6.0"
 wikidata-fast-query = ">=2.3.0"
 
 [dev-packages]

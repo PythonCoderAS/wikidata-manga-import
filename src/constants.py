@@ -8,7 +8,7 @@ import pywikibot
 import requests
 from requests_cache import CachedSession
 import urllib.parse
-from wikidata_bot_framework import site
+from wikidata_bot_framework.constants import site
 
 # Constants for ids of properties that may be created
 genre_prop = "P136"
@@ -188,7 +188,7 @@ class RatelimitSession(requests.Session):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.last_request_by_host: dict[str, int] = {}
+        self.last_request_by_host: dict[str, float] = {}
 
     def request(
         self,

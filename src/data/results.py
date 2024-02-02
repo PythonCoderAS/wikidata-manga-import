@@ -1,9 +1,11 @@
 import dataclasses
 import datetime
 from collections import defaultdict
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 import pywikibot
+
+from .extra_linkage import ExtraLinkageData
 
 from ..constants import (
     Demographics,
@@ -37,9 +39,29 @@ from ..constants import (
     volume_item,
 )
 from .bad_data import BadDataReport
-from wikidata_bot_framework import ExtraProperty, ExtraQualifier
+from wikidata_bot_framework.dataclasses import (
+    ExtraProperty,
+    ExtraQualifier,
+)
+from wikidata_bot_framework.utils import (
+    resolve_multiple_property_claims,
+    get_entity_id_from_entity_url,
+)
 from .link import Link
 from .smart_precision_time import SmartPrecisionTime
+
+if TYPE_CHECKING:
+    from ..abc.provider import Provider
+
+
+def merge_nested_defaultdict[KO, KI, VI](
+    dd1: defaultdict[KO, defaultdict[KI, set[VI]]],
+    dd2: defaultdict[KO, defaultdict[KI, set[VI]]],
+):
+    """Merge two nested defaultdicts, putting the contents of dd2 into dd1."""
+    for outer_key, inner_dict in dd2.items():
+        for inner_key, value in inner_dict.items():
+            dd1[outer_key][inner_key].update(value)
 
 
 @dataclasses.dataclass
@@ -61,7 +83,22 @@ class Result:
 
     new_id: str | None = None  # Sets a new ID for use by references
 
-    def simplify(self):
+    extra_item_linkings: defaultdict[
+        str, defaultdict[str, list[ExtraLinkageData]]
+    ] = dataclasses.field(
+        default_factory=lambda: defaultdict(lambda: defaultdict(list))
+    )
+    """
+    Easy way to conditionally add extra item links.
+
+    For example, if you want to find all items where PXXX=YYY, and add a claim for PAAA=QBBB, you can do:
+
+    .. code-block:: python
+
+        result.extra_item_linkings["PAAA"]["PXXX"] = {"YYY"}
+    """
+
+    def simplify(self, provider: "Provider", provider_id: str):
         """Simplify the self to only have values in the other properties."""
         if self.genres:
             if Genres.romance in self.genres and Genres.comedy in self.genres:
@@ -112,6 +149,10 @@ class Result:
             num_parts_claim = pywikibot.Claim(site, num_parts_prop)
             num_parts_claim.setTarget(quantity)
             self.other_properties[num_parts_prop].append(ExtraProperty(num_parts_claim))
+        self.simplify_links()
+        self.simplify_extra_linkings(provider, provider_id)
+
+    def simplify_links(self):
         for link in self.links:
             url = link.url
             if match := niconico_regex.search(url):
@@ -193,3 +234,117 @@ class Result:
                     extra_prop.qualifiers[language_prop].append(
                         ExtraQualifier(language_claim, skip_if_conflicting_exists=True)
                     )
+
+    def simplify_extra_linkings(self, provider: "Provider", provider_id: str):
+        true_resolution_data: defaultdict[
+            str, defaultdict[str, set[str]]
+        ] = defaultdict(lambda: defaultdict(set))
+        for target_prop, resolution_data in self.extra_item_linkings.items():
+            for resolution_prop, resolution_values in resolution_data.items():
+                for resolution_value in resolution_values:
+                    true_resolution_data[target_prop][resolution_prop].add(
+                        resolution_value.value
+                    )
+                    merge_nested_defaultdict(
+                        true_resolution_data, resolution_value.qualifiers_to_resolve
+                    )
+
+        final_dictionary: defaultdict[str, set[str]] = defaultdict(set)
+        for resolution_key, resolution_values in true_resolution_data.values():
+            final_dictionary[resolution_key].update(resolution_values)
+        results = resolve_multiple_property_claims(final_dictionary)
+        for target_prop, resolution_data in self.extra_item_linkings.items():
+            for resolution_prop, resolution_values in resolution_data.items():
+                for resolution_value in resolution_values:
+                    resolved_pair = results.get(
+                        (resolution_prop, resolution_value.value), None
+                    )
+                    if not resolved_pair:
+                        continue
+                    if len(resolved_pair) > 1 and not resolution_value.allow_duplicates:
+                        self.bad_data_reports.append(
+                            BadDataReport.from_duplicate_extra_item_linkage(
+                                provider,
+                                provider_id,
+                                resolution_prop,
+                                resolution_value.value,
+                                list(resolved_pair),
+                            )
+                        )
+                    else:
+                        for resolved_value in resolved_pair:
+                            extra_prop = ExtraProperty.from_property_id_and_value(
+                                target_prop,
+                                get_entity_id_from_entity_url(resolved_value),
+                            )
+                            extra_prop.add_qualifiers(
+                                resolution_value.resolved_qualifiers
+                            )
+                            found_all_qualifiers = True
+                            for (
+                                qualifier_target_prop,
+                                qualifier_resolution_data,
+                            ) in resolution_value.qualifiers_to_resolve.items():
+                                for (
+                                    qualifier_resolution_prop,
+                                    qualifier_resolution_values,
+                                ) in qualifier_resolution_data.items():
+                                    for (
+                                        qualifier_resolution_value
+                                    ) in qualifier_resolution_values:
+                                        resolved_qualifier_pair = results.get(
+                                            (
+                                                qualifier_resolution_prop,
+                                                qualifier_resolution_value,
+                                            ),
+                                            None,
+                                        )
+                                        if (
+                                            not found_all_qualifiers
+                                            and resolution_value.require_qualifiers_for_placement
+                                        ):
+                                            break
+                                        if not resolved_qualifier_pair:
+                                            found_all_qualifiers = False
+                                            continue
+                                        elif (
+                                            len(resolved_qualifier_pair) > 1
+                                            and not resolution_value.allow_duplicates
+                                        ):
+                                            self.bad_data_reports.append(
+                                                BadDataReport.from_duplicate_extra_item_linkage(
+                                                    provider,
+                                                    provider_id,
+                                                    qualifier_resolution_prop,
+                                                    qualifier_resolution_value,
+                                                    list(resolved_qualifier_pair),
+                                                )
+                                            )
+                                        else:
+                                            for (
+                                                resolved_qualifier_value
+                                            ) in resolved_qualifier_pair:
+                                                extra_prop.add_qualifier(
+                                                    ExtraQualifier.from_property_id_and_value(
+                                                        qualifier_target_prop,
+                                                        get_entity_id_from_entity_url(
+                                                            resolved_qualifier_value
+                                                        ),
+                                                    )
+                                                )
+                                    if (
+                                        not found_all_qualifiers
+                                        and resolution_value.require_qualifiers_for_placement
+                                    ):
+                                        break
+                                if (
+                                    not found_all_qualifiers
+                                    and resolution_value.require_qualifiers_for_placement
+                                ):
+                                    break
+                            if (
+                                not found_all_qualifiers
+                                and resolution_value.require_qualifiers_for_placement
+                            ):
+                                continue
+                            self.other_properties[target_prop].append(extra_prop)
